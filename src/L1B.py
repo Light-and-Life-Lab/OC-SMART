@@ -537,21 +537,35 @@ class L1B(object):
             f.close()
         elif self.sensor == 'HYPSO_HSI':
             with h5py.File(self.l1bname,'r') as f:
-                latitude_indirect = '/navigation/latitude_indirect'
-                latitude = '/navigation/latitude'
-                if latitude_indirect in f:
-                    self.latitude = f[latitude_indirect]
-                elif latitude in f:
-                    self.latitude = f[latitude]
+                # These locations were used in an old HYPSO file format, keep these options here for backwards compatibility
+                latitude_indirect_2025 = '/navigation/latitude_indirect'
+                latitude_2025 = '/navigation/latitude'
+
+                # These locations were used in an old HYPSO file format, keep these options here for backwards compatibility
+                latitude_2026 = '/geometry/latitude'
+
+                if latitude_indirect_2025 in f:
+                    self.latitude = f[latitude_indirect_2025]
+                elif latitude_2025 in f:
+                    self.latitude = f[latitude_2025]
+                elif latitude_2026 in f:
+                    self.latitude = f[latitude_2026]
 
                 self.latitude = np.array(self.latitude)
 
-                longitude_indirect = '/navigation/longitude_indirect'
-                longitude = '/navigation/longitude'
-                if longitude_indirect in f:
-                    self.longitude = f[longitude_indirect]
-                elif longitude in f:
-                    self.longitude = f[longitude]
+                # These locations were used in an old HYPSO file format, keep these options here for backwards compatibility
+                longitude_indirect_2025 = '/navigation/longitude_indirect'
+                longitude_2025 = '/navigation/longitude'
+
+                # The longitude data is in this new location as of 06/2026
+                longitude_2026 = '/geometry/longitude'
+
+                if longitude_indirect_2025 in f:
+                    self.longitude = f[longitude_indirect_2025]
+                elif longitude_2025 in f:
+                    self.longitude = f[longitude_2025]
+                elif longitude_2026 in f:
+                    self.longitude = f[longitude_2026]
 
                 self.longitude = np.array(self.longitude)
                 
@@ -1460,39 +1474,67 @@ class L1B(object):
                 # Use _indirect_latitude, _indirect_longitude, and associated indirect geometries when they are available, and
                 # fall back to latitude, longitude, and the direct geometries when the indirect ones are not available.
 
-                solar_zenith_indirect = '/navigation/solar_zenith_indirect'
-                solar_zenith = '/navigation/solar_zenith'
-                if solar_zenith_indirect in f:
-                    self.solz = f[solar_zenith_indirect]
-                elif solar_zenith in f:
-                    self.solz = f[solar_zenith]
+                # These locations were used in an old HYPSO file format, keep these options here for backwards compatibility
+                solar_zenith_indirect_2025 = '/navigation/solar_zenith_indirect'
+                solar_zenith_2025 = '/navigation/solar_zenith'
+
+                # The solar zenith data is in this new location as of 06/2026
+                solar_zenith_2026 = '/geometry/solar_zenith'
+
+                if solar_zenith_indirect_2025 in f:
+                    self.solz = f[solar_zenith_indirect_2025]
+                elif solar_zenith_2025 in f:
+                    self.solz = f[solar_zenith_2025]
+                elif solar_zenith_2026 in f:
+                    self.solz = f[solar_zenith_2026]
 
                 self.solz = np.array(self.solz[self.sline:self.eline,self.spixl:self.epixl])
 
-                solar_azimuth_indirect = '/navigation/solar_azimuth_indirect'
-                solar_azimuth = '/navigation/solar_azimuth'
-                if solar_azimuth_indirect in f:
-                    self.sola = f[solar_azimuth_indirect]
-                elif solar_azimuth in f:
-                    self.sola = f[solar_azimuth]
+                # These locations were used in an old HYPSO file format, keep these options here for backwards compatibility
+                solar_azimuth_indirect_2025 = '/navigation/solar_azimuth_indirect'
+                solar_azimuth_2025 = '/navigation/solar_azimuth'
+
+                # The solar azimuth data is in this new location as of 06/2026
+                solar_azimuth_2026 = '/geometry/solar_azimuth'
+
+                if solar_azimuth_indirect_2025 in f:
+                    self.sola = f[solar_azimuth_indirect_2025]
+                elif solar_azimuth_2025 in f:
+                    self.sola = f[solar_azimuth_2025]
+                elif solar_azimuth_2026 in f:
+                    self.sola = f[solar_azimuth_2026]
 
                 self.sola = np.array(self.sola[self.sline:self.eline,self.spixl:self.epixl])
 
-                sensor_zenith_indirect = '/navigation/sensor_zenith_indirect'
-                sensor_zenith = '/navigation/sensor_zenith'
-                if sensor_zenith_indirect in f:
-                    self.senz = f[sensor_zenith_indirect]
-                elif sensor_zenith in f:
-                    self.senz = f[sensor_zenith]
+                # These locations were used in an old HYPSO file format, keep these options here for backwards compatibility
+                sensor_zenith_indirect_2025 = '/navigation/sensor_zenith_indirect'
+                sensor_zenith_2025 = '/navigation/sensor_zenith'
+
+                # The sensor zenith data is in this new location as of 06/2026
+                sensor_zenith_2026 = '/geometry/sensor_zenith'
+
+                if sensor_zenith_indirect_2025 in f:
+                    self.senz = f[sensor_zenith_indirect_2025]
+                elif sensor_zenith_2025 in f:
+                    self.senz = f[sensor_zenith_2025]
+                elif sensor_zenith_2026 in f:
+                    self.senz = f[sensor_zenith_2026]
 
                 self.senz = np.array(self.senz[self.sline:self.eline,self.spixl:self.epixl])
 
-                sensor_azimuth_indirect = '/navigation/sensor_azimuth_indirect'
-                sensor_azimuth = '/navigation/sensor_azimuth'
-                if sensor_azimuth_indirect in f:
-                    self.sena = f[sensor_azimuth_indirect]
-                elif sensor_azimuth in f:
-                    self.sena = f[sensor_azimuth]
+                # These locations were used in an old HYPSO file format, keep these options here for backwards compatibility
+                sensor_azimuth_indirect_2025 = '/navigation/sensor_azimuth_indirect'
+                sensor_azimuth_2025 = '/navigation/sensor_azimuth'
+
+                # The sensor azimuth data is in this new location as of 06/2026
+                sensor_azimuth_2026 = 'geometry/sensor_azimuth'
+
+                if sensor_azimuth_indirect_2025 in f:
+                    self.sena = f[sensor_azimuth_indirect_2025]
+                elif sensor_azimuth_2025 in f:
+                    self.sena = f[sensor_azimuth_2025]
+                elif sensor_azimuth_2026 in f:
+                    self.sena = f[sensor_azimuth_2026]
 
                 self.sena = np.array(self.sena[self.sline:self.eline,self.spixl:self.epixl])
 
