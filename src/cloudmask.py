@@ -47,7 +47,7 @@ class Cloudmask(object):
             self.cband_id=(13,70,116,191) # 412 555 670 865nm 
         elif self.sensor == 'HYPSO_HSI':
             # TODO: Possibly need custom NIR threshold and cloud ratio (similar to EPIC) because final channel is less than 865 nm
-            self.cband_id = (38, 71, 104) # 554 668 791 nm
+            self.cband_id = (34, 67, 82) # 553 667 718 nm
     def run_cloudmask(self, lrc):
         dim=lrc.shape
 #        nband=len(self.cband_id)

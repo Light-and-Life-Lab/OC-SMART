@@ -1,0 +1,6 @@
+l1b_path = ./L1B/
+geo_path = ./GEO/
+l2_path = ./L2/
+l2_prod = Lt,Lr,Lrc,rrs,chl,tg_sol,tg_sen,Lwp
+solz_limit = 70.0
+senz_limit = 70.0
