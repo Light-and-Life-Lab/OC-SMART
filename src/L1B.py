@@ -26,6 +26,8 @@ import time
 import calendar
 from datetime import datetime, timedelta
 import re
+import sys
+from pathlib import Path
 
 class L1B(object):
     
@@ -39,8 +41,10 @@ class L1B(object):
         self.l1bname=L1Bname
         self.l1bpath=dirname(L1Bname)
         self.parse_datetime()
+
+        self.OCSMART_script_dir = str(Path(sys.argv[0]).resolve().parent)
         if GEOpath == None:
-            self.geopath = './GEO/'
+            self.geopath = self.OCSMART_script_dir + '/GEO/'
         else:
             self.geopath = GEOpath
         self.geoloc_status = 0 
@@ -320,7 +324,7 @@ class L1B(object):
             
             f.close()
         elif self.sensor=='GOCI':
-            self.goci_aux='./auxdata/common/GOCI_auxdata.h5'
+            self.goci_aux = self.OCSMART_script_dir + '/auxdata/common/GOCI_auxdata.h5'
             f=h5py.File(self.goci_aux,'r')
             self.latitude=np.array(f['Latitude'])
             self.longitude=np.array(f['Longitude'])
@@ -1351,7 +1355,7 @@ class L1B(object):
             bandlist[59:66]=np.arange(74,81)#776-810nm
             bandlist[66:78]=np.arange(84,96)#833-896nm
             bandlist=bandlist.astype(int) 
-            F0=np.loadtxt('./auxdata/sensorinfo/HICO_F0.txt') #mW/cm^2/um/sr
+            F0=np.loadtxt(self.OCSMART_script_dir + '/auxdata/sensorinfo/HICO_F0.txt') #mW/cm^2/um/sr
             f=h5py.File(self.l1bname,'r') 
             self.solz=np.array(f['navigation/solar_zenith'][self.sline:self.eline,self.spixl:self.epixl])
             self.senz=np.array(f['navigation/sensor_zenith'][self.sline:self.eline,self.spixl:self.epixl])
