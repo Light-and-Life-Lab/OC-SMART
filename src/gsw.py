@@ -15,7 +15,7 @@ from os import rename, makedirs, remove
 from osgeo import gdal
 from netCDF4 import Dataset
 from io import BytesIO
-
+from pathlib import Path
 
 
 """
@@ -48,18 +48,20 @@ def fetch_gsw_tile(tile_name, verbose=True):
 #        with open(t.name, 'wb') as fp:
 #            fp.write(raw_data)
             
+    OCSMART_script_dir = str(Path(sys.argv[0]).resolve().parent)
+
     resp = urlopen(url)
     respHtml = resp.read()
-    binfile = open('./landmask_gsw/'+basename(url), "wb")
+    binfile = open(OCSMART_script_dir + '/landmask_gsw/'+basename(url), "wb")
     binfile.write(respHtml)
     binfile.close()
 
     # read geotiff data
-    ds = gdal.Open('./landmask_gsw/'+basename(url))
+    ds = gdal.Open(OCSMART_script_dir + '/landmask_gsw/'+basename(url))
     data = ds.ReadAsArray()
     ds = None
     data[data == 255] = 100   # fill invalid data (assume water)   
-    remove('./landmask_gsw/'+basename(url))
+    remove(OCSMART_script_dir + '/landmask_gsw/'+basename(url))
     return data
 
 def aggregate(A, agg=1):

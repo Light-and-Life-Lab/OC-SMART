@@ -23,15 +23,18 @@ from src.l8_utils import load_mtl
 from glob import glob
 from lxml import objectify
 from src.obdaac_download import httpdl
+import sys
+from pathlib import Path
 
 from lib.gas_corrections_lib.src import gas_corrections
 
 class ANCILLARY(object):
 
     def __init__(self, l1b_data):
+        self.OCSMART_script_dir = str(Path(sys.argv[0]).resolve().parent)
         self.datestr = l1b_data.datestr
-        self.path='./anc/'
-        self.metsource='MERRA2' # NASA OBPG ancillary data source, options: NCEP, MERRA2
+        self.path = self.OCSMART_script_dir + '/anc/'
+        self.metsource = 'MERRA2' # NASA OBPG ancillary data source, options: NCEP, MERRA2
         self.gas_transmittance_manager = gas_corrections.Gas_Correction_Manager()
 
         print('Locating ancillary files ...')
@@ -41,7 +44,7 @@ class ANCILLARY(object):
             
 
     def read_gas_transmittance_auxdata(self, sensor_info):
-        auxpath = './auxdata/common'
+        auxpath = self.OCSMART_script_dir + '/auxdata/common'
         if sensor_info.sensor == 'GOCI':
             self.gas_transmittance_filepath = auxpath + '/' + "goci_gas_transmittance.nc"
         elif sensor_info.sensor == 'HICO':
@@ -77,7 +80,7 @@ class ANCILLARY(object):
 
             
     def read_no2(self): 
-        auxpath='./auxdata/common/'
+        auxpath=self.OCSMART_script_dir + '/auxdata/common/'
         print('Reading NO2 data ...')        
         #read NO2 data       
         months=range(1,13)
@@ -294,7 +297,7 @@ class ANCILLARY(object):
             if 'climatology' in self.oz1_name or 'climatology' in self.oz2_name:
                 print('Warning: real time ozone data unavailable, using climatology ozone data ...')
             if 'climatology' in self.oz1_name:
-                f1 = SD('./auxdata/common/'+self.oz1_name,SDC.READ)
+                f1 = SD(self.OCSMART_script_dir + '/auxdata/common/'+self.oz1_name,SDC.READ)
                 ozone1 = f1.select('ozone_mean_'+'{:03d}'.format(self.doy))[:,:]*0.001
             elif 'OMI' in self.oz1_name:
                 f1 = SD(self.path+self.oz1_name,SDC.READ)
@@ -317,7 +320,7 @@ class ANCILLARY(object):
             #     ozone1 = np.flip(np.flip(func(grid_yt,lat),1))
             
             if 'climatology' in self.oz2_name:
-                f2 = SD('./auxdata/common/'+self.oz2_name,SDC.READ)
+                f2 = SD(self.OCSMART_script_dir + '/auxdata/common/'+self.oz2_name,SDC.READ)
                 ozone2 = f2.select('ozone_mean_'+'{:03d}'.format(self.doy))[:,:]*0.001
             elif 'OMI' in self.oz2_name:
                 f2 = SD(self.path+self.oz2_name,SDC.READ)
@@ -344,7 +347,7 @@ class ANCILLARY(object):
             if 'climatology' in self.oz1_name or 'climatology' in self.oz2_name:
                 print('Warning: real time ozone data unavailable, using climatology ozone data ...')
             if 'climatology' in self.oz1_name:
-                f1 = SD('./auxdata/common/'+self.oz1_name,SDC.READ)
+                f1 = SD(self.OCSMART_script_dir + '/auxdata/common/'+self.oz1_name,SDC.READ)
                 ozone1 = f1.select('ozone_mean_'+'{:03d}'.format(self.doy))[:,:]*0.001
             else:
                 fd=Dataset(self.path+self.oz1_name,'r')                
@@ -352,7 +355,7 @@ class ANCILLARY(object):
                 fd.close()
             
             if 'climatology' in self.oz2_name:
-                f2 = SD('./auxdata/common/'+self.oz2_name,SDC.READ)
+                f2 = SD(self.OCSMART_script_dir + '/auxdata/common/'+self.oz2_name,SDC.READ)
                 ozone2 = f2.select('ozone_mean_'+'{:03d}'.format(self.doy))[:,:]*0.001
             else:
                 fd=Dataset(self.path+self.oz2_name,'r')

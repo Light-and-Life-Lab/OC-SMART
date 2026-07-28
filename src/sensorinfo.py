@@ -10,6 +10,7 @@ Created on Wed Jan 16 11:09:04 2019
 import numpy as np
 from os.path import basename
 import sys
+from pathlib import Path
 
 class sensorinfo(object):
     
@@ -21,12 +22,13 @@ class sensorinfo(object):
         self.sensor_status = 0
         if sensor is None:
             self.autodetect()
-        if self.sensor_status == 0:          
-            info_fname='./auxdata/sensorinfo/'+self.sensor+'.txt'
+        if self.sensor_status == 0:
+            OCSMART_script_dir = str(Path(sys.argv[0]).resolve().parent)    
+            info_fname = OCSMART_script_dir + '/auxdata/sensorinfo/'+self.sensor+'.txt'
             info=np.loadtxt(info_fname,dtype=np.float64)
             self.band=info[:,0].astype(int)
             if self.sensor == 'OCI':
-                NN_wavelengths_fname = './auxdata/sensorinfo/' + self.sensor + '_NN_wavelengths.txt'
+                NN_wavelengths_fname = OCSMART_script_dir + '/auxdata/sensorinfo/' + self.sensor + '_NN_wavelengths.txt'
                 NN_wavelengths_file = np.loadtxt(NN_wavelengths_fname, dtype=np.float64)
                 self.training_bands = NN_wavelengths_file[:].astype(int)
             else:

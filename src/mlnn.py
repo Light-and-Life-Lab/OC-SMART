@@ -7,13 +7,16 @@ Created on Thu Jan 17 19:40:49 2019
 
 import numpy as np
 import h5py
+import sys
+from pathlib import Path
 
 class MLNN(object):
 
     def __init__(self, sensorinfo=None):
         print('Loading Multilayer Neural Networks (MLNNs) ... ')
         self.sensor = sensorinfo.sensor
-        self.path = './auxdata/MLNN_nets/'
+        OCSMART_script_dir = str(Path(sys.argv[0]).resolve().parent)
+        self.path = OCSMART_script_dir + '/auxdata/MLNN_nets/'
         self.band = sensorinfo.band
         self.vgaino = sensorinfo.vgaino
         self.vgainc = sensorinfo.vgainc

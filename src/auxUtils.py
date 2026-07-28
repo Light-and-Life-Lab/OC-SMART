@@ -7,6 +7,8 @@ Created on Wed Jan 16 11:06:04 2019
 @author: Yongzhen Fan
 """
 
+import sys
+from pathlib import Path
 import numpy as np
 import h5py
 from scipy import interpolate
@@ -15,7 +17,8 @@ from scipy import interpolate
 class AUXData(object):
 
     def __init__(self):
-        self.auxpath='./auxdata/common/'
+        OCSMART_script_dir = str(Path(sys.argv[0]).resolve().parent)
+        self.auxpath = OCSMART_script_dir + '/auxdata/common/'
         #read landmask
 #        print('Read land/water mask ... \n')
         resol=2 #1X1 grid

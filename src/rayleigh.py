@@ -9,6 +9,8 @@ import numpy as np
 from pyhdf.SD import SD, SDC
 from netCDF4 import Dataset
 from scipy import interpolate
+import sys
+from pathlib import Path
 
 class Rayleigh(object):
     
@@ -17,7 +19,8 @@ class Rayleigh(object):
         self.band=info.band
         nband=len(self.band)
         self.sensor_taur=info.tauray
-        ray_path='./auxdata/Rayleigh/' 
+        OCSMART_script_dir = str(Path(sys.argv[0]).resolve().parent)
+        ray_path = OCSMART_script_dir + '/auxdata/Rayleigh/' 
         if self.sensor in ['OCI', 'HYPSO_HSI']:
             ray_name=ray_path+self.sensor+'/rayleigh_'+self.sensor.lower()+'_'+str(self.band[0])+'_iqu.nc'
             f=Dataset(ray_name,'r')             
