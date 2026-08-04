@@ -1,3 +1,5 @@
+*.hdf filter=lfs diff=lfs merge=lfs -text
+*.h5 filter=lfs diff=lfs merge=lfs -text
 auxdata/common/GOCI_auxdata.h5 filter=lfs diff=lfs merge=lfs -text
 auxdata/common/no2_climatology_v2013.hdf filter=lfs diff=lfs merge=lfs -text
 auxdata/common/ozone_climatology_v2014.hdf filter=lfs diff=lfs merge=lfs -text
