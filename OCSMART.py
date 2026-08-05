@@ -14,7 +14,7 @@ import sys
 import numpy as np
 import h5py
 from netCDF4 import Dataset
-import time
+import timeco
 from global_land_mask import globe
 
 from src.L1B import L1B
@@ -50,13 +50,8 @@ else:
 if 'l2_path' in input_param.keys():
     L2_path = input_param['l2_path']
 else:
-<<<<<<< HEAD
     print('Warning: L2 data directory not specified, using default L2 data directory:' + OCSMART_script_dir +  '/L2/')
     L2_path = OCSMART_script_dir + '/L2/'
-=======
-    print('Warning: L2 data directory not specified, using default L2 data directory: ./L2/')
-    L2_path = './L2/'
->>>>>>> 1d20b4d (Commit prior to reworking issue with relative paths)
 ####################################################
     
 #######  parameter setup  ##########################
