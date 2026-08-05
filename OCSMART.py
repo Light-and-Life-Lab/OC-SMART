@@ -14,7 +14,7 @@ import sys
 import numpy as np
 import h5py
 from netCDF4 import Dataset
-import timeco
+import time
 from global_land_mask import globe
 
 from src.L1B import L1B
