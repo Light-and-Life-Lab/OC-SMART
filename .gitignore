@@ -219,3 +219,4 @@ __marimo__/
 .vscode/
 environment.yml
 src/.vscode/
+lib/gas_corrections_lib
