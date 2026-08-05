@@ -1,0 +1,17 @@
+gas_corrections_lib/gas_corrections_cpp/.rendered.gas_transmittance.cpp
+gas_corrections_lib/gas_corrections_cpp/src/.rendered.gas_transmittance.cpp
+gas_corrections_lib/__pycache__
+gas_corrections_lib/src/__pycache__
+gas_corrections_lib/src/__pycache__/
+gas_corrections_lib/src/__pycache__/gas_corrections.cpython-311-pytest-8.4.1.pyc
+gas_corrections_lib/gas_corrections_cpp/__pycache__/
+gas_corrections_lib/gas_corrections_cpp/src/__pycache__/
+gas_corrections_lib/test/__pycache__
+gas_corrections_lib/test/PACE
+gas_corrections_lib/test/TODO.txt
+*.pyc*
+gas_corrections_lib/gas_corrections_cpp/gas_transmittance.cpython-313-x86_64-linux-gnu.so
+gas_corrections_lib/gas_corrections_cpp/gas_transmittance.cpython-311-x86_64-linux-gnu.so
+gas_corrections_lib/gas_corrections_cpp/bin/
+gas_corrections_lib/test/npy/
+gas_corrections_lib/test/HICO/
