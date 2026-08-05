@@ -220,3 +220,7 @@ __marimo__/
 environment.yml
 src/.vscode/
 lib/gas_corrections_lib
+L1B/
+!L1B/.gitkeep
+L2/
+!L2/.gitkeep
