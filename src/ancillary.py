@@ -26,7 +26,7 @@ from src.obdaac_download import httpdl
 import sys
 from pathlib import Path
 
-from lib.Atmospheric_Gas_Correction_Library.gas_corrections_lib.src import gas_corrections
+from gas_corrections_lib.src import gas_corrections
 
 class ANCILLARY(object):
 
