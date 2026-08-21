@@ -1,3 +1,0 @@
-[submodule "lib/Atmospheric_Gas_Correction_Library"]
-	path = lib/Atmospheric_Gas_Correction_Library
-	url = git@github.com:Light-and-Life-Lab/Atmospheric_Gas_Correction_Library.git
