@@ -1,7 +1,6 @@
 certifi>=2025.10.5
 cftime>=1.6.4
 charset-normalizer>=3.3.2
-GDAL==3.4.1
 global-land-mask>=1.0.0
 h5py>=3.12.0
 idna>=3.7
