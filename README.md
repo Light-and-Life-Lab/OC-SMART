@@ -19,6 +19,7 @@ a. The GDAL library can be installed via your OS's package manager. Please follo
 Debian/Ubuntu (including WSL):
 
 `sudo apt update`
+
 `sudo apt install -y gdal-bin libgdal-dev`
 
 RHEL/Fedora/CentOS:
