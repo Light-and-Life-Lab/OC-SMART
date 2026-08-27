@@ -234,59 +234,60 @@ for ifile in np.arange(nfiles):
                 stratospheric_no2_concentration = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
                 tropospheric_no2_concentration = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
 
-                tg_sol = np.zeros(l1b_dim,dtype=datatype) + 1.0
-                tg_sen = np.zeros(l1b_dim,dtype=datatype) + 1.0
+                tg_sol = np.ones(l1b_dim,dtype=datatype)
+                tg_sen = np.ones(l1b_dim,dtype=datatype)
 
-                solar_zenith_oz = np.zeros(l1b_dim,dtype=datatype) + 1.0
-                sensor_zenith_oz = np.zeros(l1b_dim,dtype=datatype) + 1.0
-                # solar_zenith_oz_py = np.zeros(l1b_dim,dtype=datatype) + 1.0
-                # sensor_zenith_oz_py = np.zeros(l1b_dim,dtype=datatype) + 1.0
+                solar_zenith_oz = np.ones(l1b_dim,dtype=datatype)
+                sensor_zenith_oz = np.ones(l1b_dim,dtype=datatype)
+                # solar_zenith_oz_py = np.ones(l1b_dim,dtype=datatype)
+                # sensor_zenith_oz_py = np.ones(l1b_dim,dtype=datatype)
 
-                solar_zenith_no2 = np.zeros(l1b_dim,dtype=datatype) + 1.0
-                sensor_zenith_no2 = np.zeros(l1b_dim,dtype=datatype) + 1.0
-                # solar_zenith_no2_py = np.zeros(l1b_dim,dtype=datatype) + 1.0
-                # sensor_zenith_no2_py = np.zeros(l1b_dim,dtype=datatype) + 1.0
+                solar_zenith_no2 = np.ones(l1b_dim,dtype=datatype)
+                sensor_zenith_no2 = np.ones(l1b_dim,dtype=datatype)
+                # solar_zenith_no2_py = np.ones(l1b_dim,dtype=datatype)
+                # sensor_zenith_no2_py = np.ones(l1b_dim,dtype=datatype)
 
-                solar_zenith_co2 = np.zeros(l1b_dim, dtype = datatype) + 1.0
-                sensor_zenith_co2 = np.zeros(l1b_dim, dtype = datatype) + 1.0
+                solar_zenith_co2 = np.ones(l1b_dim, dtype=datatype)
+                sensor_zenith_co2 = np.ones(l1b_dim, dtype=datatype)
 
-                solar_zenith_co = np.zeros(l1b_dim, dtype = datatype) + 1.0
-                sensor_zenith_co = np.zeros(l1b_dim, dtype = datatype) + 1.0
+                solar_zenith_co = np.ones(l1b_dim, dtype=datatype)
+                sensor_zenith_co = np.ones(l1b_dim, dtype=datatype)
 
-                solar_zenith_ch4 = np.zeros(l1b_dim, dtype = datatype) + 1.0
-                sensor_zenith_ch4 = np.zeros(l1b_dim, dtype = datatype) + 1.0
+                solar_zenith_ch4 = np.ones(l1b_dim, dtype=datatype)
+                sensor_zenith_ch4 = np.ones(l1b_dim, dtype=datatype)
 
-                solar_zenith_n2o = np.zeros(l1b_dim, dtype = datatype) + 1.0
-                sensor_zenith_n2o = np.zeros(l1b_dim, dtype = datatype) + 1.0
+                solar_zenith_n2o = np.ones(l1b_dim, dtype=datatype)
+                sensor_zenith_n2o = np.ones(l1b_dim, dtype=datatype)
 
-                solar_zenith_o2 = np.zeros(l1b_dim, dtype = datatype) + 1.0
-                sensor_zenith_o2 = np.zeros(l1b_dim, dtype = datatype) + 1.0
+                solar_zenith_o2 = np.ones(l1b_dim, dtype=datatype)
+                sensor_zenith_o2 = np.ones(l1b_dim, dtype=datatype)
 
-                solar_zenith_h2o = np.zeros(l1b_dim, dtype = datatype) + 1.0
-                sensor_zenith_h2o = np.zeros(l1b_dim, dtype = datatype) + 1.0
+                solar_zenith_h2o = np.ones(l1b_dim, dtype=datatype)
+                sensor_zenith_h2o = np.ones(l1b_dim, dtype=datatype)
 
                 if sinfo.sensor == 'SeaWiFS':
-                    tg_o2 = np.zeros([l1b_dim[0],l1b_dim[1]], dtype=datatype) + 1.0
-                l1b_ray = np.zeros(l1b_dim, dtype=datatype) + np.nan
-                press_fac = np.zeros(l1b_dim, dtype=datatype) + np.nan
-                l1b_wcaps = np.zeros(l1b_dim,dtype=datatype) + np.nan
-                lrc = np.zeros(l1b_dim, dtype=datatype) - 999.   
+                    tg_o2 = np.ones([l1b_dim[0],l1b_dim[1]], dtype=datatype)
+
+                l1b_ray = np.full(l1b_dim, np.nan, dtype=datatype)
+                press_fac = np.full(l1b_dim, np.nan, dtype=datatype)
+                l1b_wcaps = np.full(l1b_dim, np.nan, dtype=datatype)
+                lrc = np.full(l1b_dim, -999., dtype=datatype)
                 cmask = np.zeros([l1b_dim[0], l1b_dim[1]], dtype='bool')
                 glint_coeff = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
                 blockmask = np.zeros([l1b_dim[0], l1b_dim[1]], dtype='bool')
                 oos_flag = np.zeros([l1b_dim[0], l1b_dim[1]], dtype='bool')
-                aods = np.zeros([l1b_dim[0], l1b_dim[1], int(mlnn.aodnn_layers[-1])], dtype=datatype) + np.nan
-                rrs = np.zeros([l1b_dim[0],l1b_dim[1], int(mlnn.rrsnn_layers[-1])], dtype=datatype) + np.nan    
-                lrc_aann = np.zeros([l1b_dim[0], l1b_dim[1], int(mlnn.aann_layers[-1])], dtype=datatype) + np.nan 
-                chl_oci = np.zeros([l1b_dim[0],l1b_dim[1]]) + np.nan
-                chl_ocx = np.zeros([l1b_dim[0],l1b_dim[1]]) + np.nan
-                chl_yoc = np.zeros([l1b_dim[0],l1b_dim[1]]) + np.nan
-                tsm_yoc = np.zeros([l1b_dim[0],l1b_dim[1]]) + np.nan
-                aph = np.zeros([l1b_dim[0], l1b_dim[1], int(mlnn.aphnn_layers[-1])], dtype=datatype) + np.nan
-                adg = np.zeros([l1b_dim[0], l1b_dim[1], int(mlnn.adgnn_layers[-1])], dtype=datatype) + np.nan
-                bbp = np.zeros([l1b_dim[0], l1b_dim[1], int(mlnn.bbpnn_layers[-1])], dtype=datatype) + np.nan
-                ap = np.zeros([l1b_dim[0], l1b_dim[1], int(mlnn.apnn_layers[-1])], dtype=datatype) + np.nan
-                bp = np.zeros([l1b_dim[0], l1b_dim[1], int(mlnn.bpnn_layers[-1])], dtype=datatype) + np.nan
+                aods = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.aodnn_layers[-1])], np.nan, dtype=datatype)
+                rrs = np.full([l1b_dim[0],l1b_dim[1], int(mlnn.rrsnn_layers[-1])], np.nan, dtype=datatype)
+                lrc_aann = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.aann_layers[-1])], np.nan, dtype=datatype)
+                chl_oci = np.full([l1b_dim[0], l1b_dim[1]], np.nan)
+                chl_ocx = np.full([l1b_dim[0], l1b_dim[1]], np.nan)
+                chl_yoc = np.full([l1b_dim[0], l1b_dim[1]], np.nan)
+                tsm_yoc = np.full([l1b_dim[0],l1b_dim[1]], np.nan)
+                aph = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.aphnn_layers[-1])], np.nan, dtype=datatype)
+                adg = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.adgnn_layers[-1])], np.nan, dtype=datatype)
+                bbp = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.bbpnn_layers[-1])], np.nan, dtype=datatype)
+                ap = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.apnn_layers[-1])], np.nan, dtype=datatype)
+                bp = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.bpnn_layers[-1])], np.nan, dtype=datatype)
                                 
                 
                 # mask invalid radiances data
