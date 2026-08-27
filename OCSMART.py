@@ -67,10 +67,10 @@ else:
     senz_limit = 70.0
 if 'l2_prod' in input_param.keys():
     l2_prod=input_param['l2_prod'].split(',')
-    l2_prod=[x.strip() for x in l2_prod]
+    l2_prod = [x.strip() for x in l2_prod]
 else:
     print('List of level-2 products not provided, using default list: rrs, chl')
-    l2_prod=['rrs','chl']
+    l2_prod = ['rrs','chl']
 
 water_subpixl_limit = 0.95 # for land/water mask
 #glint_max = 0.05 (not needed)
@@ -83,25 +83,29 @@ water_subpixl_limit = 0.95 # for land/water mask
 # Option C. (start_line, end_line, start_pixel, end_pixel)
 #######################################################################
 
-mission = { 'MODISA'    : 'Aqua MODIS',
-            'MODIST'    : 'Terra MODIS',
-            'SeaWiFS'   : 'SeaWiFS',
-            'SNPP'      : 'Suomi-NPP VIIRS',
-            'JPSS1'     : 'NOAA-20 VIIRS',
-            'JPSS2'     : 'NOAA-21 VIIRS',
-            'GOCI'      : 'COMS GOCI',
-            'SGLI'      : 'GCOM-C SGLI',
-            'L08'       : 'Landsat-8 OLI',
-            'L09'       : 'Landsat-9 OLI',
-            'S3A'       : 'Sentinel-3A OLCI',
-            'S3B'       : 'Sentinel-3B OLCI',
-            'S2A'       : 'Sentinel-2A MSI',
-            'S2B'       : 'Sentinel-2B MSI',
-            'EPIC'      : 'DSCOVR EPIC',
-            'MERSI2'    : 'FengYun-3D MERSI-II',
-            'HICO'      : 'ISS HICO',
-            'PACE'      : 'PACE OLI',
-            'HYPSO'     : 'HYPSO HSI'}
+mission = \
+{ 
+    'MODISA'    : 'Aqua MODIS',
+    'MODIST'    : 'Terra MODIS',
+    'SeaWiFS'   : 'SeaWiFS',
+    'SNPP'      : 'Suomi-NPP VIIRS',
+    'JPSS1'     : 'NOAA-20 VIIRS',
+    'JPSS2'     : 'NOAA-21 VIIRS',
+    'GOCI'      : 'COMS GOCI',
+    'SGLI'      : 'GCOM-C SGLI',
+    'L08'       : 'Landsat-8 OLI',
+    'L09'       : 'Landsat-9 OLI',
+    'S3A'       : 'Sentinel-3A OLCI',
+    'S3B'       : 'Sentinel-3B OLCI',
+    'S2A'       : 'Sentinel-2A MSI',
+    'S2B'       : 'Sentinel-2B MSI',
+    'EPIC'      : 'DSCOVR EPIC',
+    'MERSI2'    : 'FengYun-3D MERSI-II',
+    'HICO'      : 'ISS HICO',
+    'PACE'      : 'PACE OLI',
+    'HYPSO'     : 'HYPSO HSI'
+}
+
 print('Start OC-SMART ... \n')
 if isdir(L1_path):
     print('Input level-1 data directory : {}'.format(L1_path))
@@ -119,7 +123,7 @@ else:
 # list all files in the L1 directory
 #L1files = [f for f in os.listdir(L1_path) if isfile(join(L1_path, f))]
 L1files = sorted([f for f in os.listdir(L1_path)])
-nfiles=len(L1files)
+nfiles = len(L1files)
 print('{} files found in the level-1 directory. \n'.format(nfiles))
 
 print('Level-2 products: {} \n'.format(', '.join(l2_prod)))
@@ -129,8 +133,8 @@ aux=AUXData()
 
 # start processing all files
 for ifile in np.arange(nfiles):
-    fname=L1files[ifile]
-    t_start=time.time()    
+    fname = L1files[ifile]
+    t_start = time.time()    
     print('Processing file {}  {}'.format(ifile+1, fname))    
     
     # get sensor information
@@ -201,34 +205,34 @@ for ifile in np.arange(nfiles):
                 anc.read_gas_transmittance_auxdata(sinfo)
                 
                 #read Rayleigh table
-                ray=Rayleigh(info=sinfo)
+                ray = Rayleigh(info=sinfo)
                 
                 # get dimension
-                l1b_dim=l1b.reflectance.shape
+                l1b_dim = l1b.reflectance.shape
                 
                 #initialize cloud mask
-                cm=Cloudmask(sensorinfo=sinfo)
+                cm = Cloudmask(sensorinfo=sinfo)
                 
                 # initialize the Multilayer Neural Networks
-                mlnn=MLNN(sensorinfo=sinfo)
+                mlnn = MLNN(sensorinfo=sinfo)
                 
                 # initialize CHLa, CDOM and TSM algorithm
-                chl=CHL(sensorinfo=sinfo)
-                tsm=TSM(sensorinfo=sinfo)
-                cdom=CDOM(sensorinfo=sinfo)
+                chl = CHL(sensorinfo=sinfo)
+                tsm = TSM(sensorinfo=sinfo)
+                cdom = CDOM(sensorinfo=sinfo)
                 
                 # initialize all needed matrices 
-                niopbands=np.sum(sinfo.band<700)
-                l2_mask=np.zeros([l1b_dim[0],l1b_dim[1]],dtype='int16')
-                water_portion=np.zeros([l1b_dim[0],l1b_dim[1]],dtype=datatype)
-                l1b_pressure=np.zeros([l1b_dim[0],l1b_dim[1]],dtype=datatype)
-                l1b_rh=np.zeros([l1b_dim[0],l1b_dim[1]],dtype=datatype)
-                l1b_ws=np.zeros([l1b_dim[0],l1b_dim[1]],dtype=datatype)
+                niopbands = np.sum(sinfo.band < 700)
+                l2_mask = np.zeros([l1b_dim[0], l1b_dim[1]], dtype='int16')
+                water_portion = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
+                l1b_pressure = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
+                l1b_rh = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
+                l1b_ws = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
 
-                ozone_concentration = np.zeros([l1b_dim[0],l1b_dim[1]],dtype=datatype)
-                fraction_tropospheric_no2_above_200m = np.zeros([l1b_dim[0],l1b_dim[1]],dtype=datatype)
-                stratospheric_no2_concentration = np.zeros([l1b_dim[0],l1b_dim[1]],dtype=datatype)
-                tropospheric_no2_concentration = np.zeros([l1b_dim[0],l1b_dim[1]],dtype=datatype)
+                ozone_concentration = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
+                fraction_tropospheric_no2_above_200m = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
+                stratospheric_no2_concentration = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
+                tropospheric_no2_concentration = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
 
                 tg_sol = np.zeros(l1b_dim,dtype=datatype) + 1.0
                 tg_sen = np.zeros(l1b_dim,dtype=datatype) + 1.0
@@ -262,27 +266,27 @@ for ifile in np.arange(nfiles):
                 sensor_zenith_h2o = np.zeros(l1b_dim, dtype = datatype) + 1.0
 
                 if sinfo.sensor == 'SeaWiFS':
-                    tg_o2 = np.zeros([l1b_dim[0],l1b_dim[1]],dtype=datatype)+1.0
-                l1b_ray=np.zeros(l1b_dim,dtype=datatype)+np.nan
-                press_fac=np.zeros(l1b_dim,dtype=datatype)+np.nan
-                l1b_wcaps=np.zeros(l1b_dim,dtype=datatype)+np.nan
-                lrc=np.zeros(l1b_dim,dtype=datatype)-999.   
-                cmask=np.zeros([l1b_dim[0],l1b_dim[1]],dtype='bool')
-                glint_coeff=np.zeros([l1b_dim[0],l1b_dim[1]],dtype=datatype)
-                blockmask=np.zeros([l1b_dim[0],l1b_dim[1]],dtype='bool')
-                oos_flag=np.zeros([l1b_dim[0],l1b_dim[1]],dtype='bool')
-                aods=np.zeros([l1b_dim[0],l1b_dim[1], int(mlnn.aodnn_layers[-1])],dtype=datatype)+np.nan
-                rrs=np.zeros([l1b_dim[0],l1b_dim[1], int(mlnn.rrsnn_layers[-1])],dtype=datatype)+np.nan    
-                lrc_aann=np.zeros([l1b_dim[0],l1b_dim[1], int(mlnn.aann_layers[-1])],dtype=datatype)+np.nan 
-                chl_oci=np.zeros([l1b_dim[0],l1b_dim[1]])+np.nan
-                chl_ocx=np.zeros([l1b_dim[0],l1b_dim[1]])+np.nan
-                chl_yoc=np.zeros([l1b_dim[0],l1b_dim[1]])+np.nan
-                tsm_yoc=np.zeros([l1b_dim[0],l1b_dim[1]])+np.nan
-                aph=np.zeros([l1b_dim[0],l1b_dim[1],int(mlnn.aphnn_layers[-1])],dtype=datatype)+np.nan
-                adg=np.zeros([l1b_dim[0],l1b_dim[1],int(mlnn.adgnn_layers[-1])],dtype=datatype)+np.nan
-                bbp=np.zeros([l1b_dim[0],l1b_dim[1],int(mlnn.bbpnn_layers[-1])],dtype=datatype)+np.nan
-                ap=np.zeros([l1b_dim[0],l1b_dim[1],int(mlnn.apnn_layers[-1])],dtype=datatype)+np.nan
-                bp=np.zeros([l1b_dim[0],l1b_dim[1],int(mlnn.bpnn_layers[-1])],dtype=datatype)+np.nan
+                    tg_o2 = np.zeros([l1b_dim[0],l1b_dim[1]], dtype=datatype) + 1.0
+                l1b_ray = np.zeros(l1b_dim, dtype=datatype) + np.nan
+                press_fac = np.zeros(l1b_dim, dtype=datatype) + np.nan
+                l1b_wcaps = np.zeros(l1b_dim,dtype=datatype) + np.nan
+                lrc = np.zeros(l1b_dim, dtype=datatype) - 999.   
+                cmask = np.zeros([l1b_dim[0], l1b_dim[1]], dtype='bool')
+                glint_coeff = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
+                blockmask = np.zeros([l1b_dim[0], l1b_dim[1]], dtype='bool')
+                oos_flag = np.zeros([l1b_dim[0], l1b_dim[1]], dtype='bool')
+                aods = np.zeros([l1b_dim[0], l1b_dim[1], int(mlnn.aodnn_layers[-1])], dtype=datatype) + np.nan
+                rrs = np.zeros([l1b_dim[0],l1b_dim[1], int(mlnn.rrsnn_layers[-1])], dtype=datatype) + np.nan    
+                lrc_aann = np.zeros([l1b_dim[0], l1b_dim[1], int(mlnn.aann_layers[-1])], dtype=datatype) + np.nan 
+                chl_oci = np.zeros([l1b_dim[0],l1b_dim[1]]) + np.nan
+                chl_ocx = np.zeros([l1b_dim[0],l1b_dim[1]]) + np.nan
+                chl_yoc = np.zeros([l1b_dim[0],l1b_dim[1]]) + np.nan
+                tsm_yoc = np.zeros([l1b_dim[0],l1b_dim[1]]) + np.nan
+                aph = np.zeros([l1b_dim[0], l1b_dim[1], int(mlnn.aphnn_layers[-1])], dtype=datatype) + np.nan
+                adg = np.zeros([l1b_dim[0], l1b_dim[1], int(mlnn.adgnn_layers[-1])], dtype=datatype) + np.nan
+                bbp = np.zeros([l1b_dim[0], l1b_dim[1], int(mlnn.bbpnn_layers[-1])], dtype=datatype) + np.nan
+                ap = np.zeros([l1b_dim[0], l1b_dim[1], int(mlnn.apnn_layers[-1])], dtype=datatype) + np.nan
+                bp = np.zeros([l1b_dim[0], l1b_dim[1], int(mlnn.bpnn_layers[-1])], dtype=datatype) + np.nan
                                 
                 
                 # mask invalid radiances data
@@ -400,31 +404,32 @@ for ifile in np.arange(nfiles):
                 l1b_pressure[mask_valid_geo_water], l1b_rh[mask_valid_geo_water], l1b_ws[mask_valid_geo_water] = anc.get_metdata(l1b.latitude[mask_valid_geo_water],l1b.longitude[mask_valid_geo_water])
 
                 # get Rayleigh reflectance and correct for real time pressure
-                l1b_ray[mask_valid_geo_water,:]=ray.corr_ray(l1b.solz[mask_valid_geo_water],\
+                l1b_ray[mask_valid_geo_water,:] = ray.corr_ray(l1b.solz[mask_valid_geo_water],\
                                                            l1b.senz[mask_valid_geo_water],\
                                                            l1b.relaz[mask_valid_geo_water],\
                                                            l1b_ws[mask_valid_geo_water])
                 
-                press_fac[mask_valid_geo_water,:]=ray.corr_ray_press(l1b.solz[mask_valid_geo_water],\
+                press_fac[mask_valid_geo_water,:] = ray.corr_ray_press(l1b.solz[mask_valid_geo_water],\
                                                                    l1b.senz[mask_valid_geo_water],\
                                                                    l1b_pressure[mask_valid_geo_water])
                 
-                l1b_ray[mask_valid_geo_water,:]=l1b_ray[mask_valid_geo_water,:]*press_fac[mask_valid_geo_water,:]
+                l1b_ray[mask_valid_geo_water,:] = l1b_ray[mask_valid_geo_water,:] * press_fac[mask_valid_geo_water,:]
                 
                 # Oxygen absorption correction for SeaWiFS band 7
                 if sinfo.sensor == 'SeaWiFS':
-                    tg_o2[mask_valid_geo_water] = anc.trans_o2_ray(l1b.solz[mask_valid_geo_water],l1b.senz[mask_valid_geo_water])
-                    l1b_ray[mask_valid_geo_water,6]=l1b_ray[mask_valid_geo_water,6]*tg_o2[mask_valid_geo_water]
+                    tg_o2[mask_valid_geo_water] = anc.trans_o2_ray(l1b.solz[mask_valid_geo_water], l1b.senz[mask_valid_geo_water])
+                    l1b_ray[mask_valid_geo_water,6] = l1b_ray[mask_valid_geo_water,6] * tg_o2[mask_valid_geo_water]
+
                 # get whitecaps reflectance
-                l1b_wcaps[mask_valid_geo_water,:]=anc.whitecaps(sinfo.band,l1b.solz[mask_valid_geo_water],\
+                l1b_wcaps[mask_valid_geo_water,:] = anc.whitecaps(sinfo.band,l1b.solz[mask_valid_geo_water],\
                                                               l1b.senz[mask_valid_geo_water], \
                                                               l1b_ws[mask_valid_geo_water], \
                                                               l1b_pressure[mask_valid_geo_water], ray.taur)
                  
                 # compute Rayleigh corrected reflectance and mask negative value, if any
-                # lrc[mask_valid_geo_water,:]=l1b.reflectance[mask_valid_geo_water,:]/solar_zenith_oz[mask_valid_geo_water,:]/sensor_zenith_oz[mask_valid_geo_water,:]\
+                # lrc[mask_valid_geo_water,:] = l1b.reflectance[mask_valid_geo_water,:]/solar_zenith_oz[mask_valid_geo_water,:]/sensor_zenith_oz[mask_valid_geo_water,:]\
                 #                            /solar_zenith_no2[mask_valid_geo_water,:]/sensor_zenith_no2[mask_valid_geo_water,:]-l1b_wcaps[mask_valid_geo_water,:]-l1b_ray[mask_valid_geo_water,:]
-#                lrc[mask_valid_geo_water,:]=l1b.reflectance[mask_valid_geo_water,:]/solar_zenith_oz[mask_valid_geo_water,:]/sensor_zenith_oz[mask_valid_geo_water,:]\
+#                lrc[mask_valid_geo_water,:] = l1b.reflectance[mask_valid_geo_water,:]/solar_zenith_oz[mask_valid_geo_water,:]/sensor_zenith_oz[mask_valid_geo_water,:]\
 #                                           /solar_zenith_no2[mask_valid_geo_water,:]/sensor_zenith_no2[mask_valid_geo_water,:]-l1b_wcaps[mask_valid_geo_water,:]
 
                 print("Applying Corrections...")
@@ -452,10 +457,10 @@ for ifile in np.arange(nfiles):
                                             - l1b_wcaps[mask_valid_geo_water,:] - l1b_ray[mask_valid_geo_water,:]
 
                 
-                neg=np.sum(lrc<0.0,axis=2)
-                mask_valid_geo_water_lrcposi = neg == 0
-                lrc[lrc==-999]=999
-                neg1=np.sum(lrc<0.0,axis=2)
+                neg = np.sum(lrc < 0.0, axis=2)
+                mask_valid_geo_water_lrcposi = (neg == 0)
+                lrc[lrc == -999] = 999
+                neg1 = np.sum(lrc < 0.0, axis=2)
                 mask_valid_geo_water_lrcneg = neg1 > 0
                 l2_mask[mask_valid_geo_water_lrcneg] = 1024
                 
@@ -482,8 +487,8 @@ for ifile in np.arange(nfiles):
 #                    cmask_idx = np.concatenate((np.where(cmask==1)[0],np.where(cmask==1)[0]))
 #                    cmask_idy = np.concatenate((np.where(cmask==1)[1]+1,np.where(cmask==1)[1]-1))
 #                    cmask[cmask_idx,cmask_idy] = True
-                mask_valid_geo_water_lrcposi_cloud= mask_valid_geo_water_lrcposi & cmask
-                mask_valid_geo_water_lrcposi_nocloud= mask_valid_geo_water_lrcposi & ~cmask
+                mask_valid_geo_water_lrcposi_cloud = mask_valid_geo_water_lrcposi & cmask
+                mask_valid_geo_water_lrcposi_nocloud = mask_valid_geo_water_lrcposi & ~cmask
                 l2_mask[mask_valid_geo_water_lrcposi_cloud] = 64
 
                 training_bands = sinfo.training_bands
@@ -495,14 +500,14 @@ for ifile in np.arange(nfiles):
                 #if image is too large, separate into blocks to process
                 if block_size < 0:
                     
-                    oos_flag[mask_valid_geo_water_lrcposi_nocloud],lrc_aann[mask_valid_geo_water_lrcposi_nocloud,:]=\
+                    oos_flag[mask_valid_geo_water_lrcposi_nocloud], lrc_aann[mask_valid_geo_water_lrcposi_nocloud,:] = \
                                                                                      mlnn.compute_aann(l1b.solz[mask_valid_geo_water_lrcposi_nocloud],\
                                                                                      l1b.senz[mask_valid_geo_water_lrcposi_nocloud],\
                                                                                      l1b.relaz[mask_valid_geo_water_lrcposi_nocloud],\
                                                                                      lrc[mask_valid_geo_water_lrcposi_nocloud, :][:, wavelength_mask],\
                                                                                      l1b_rh[mask_valid_geo_water_lrcposi_nocloud])
                     if 'aod' in l2_prod:
-                        aods[mask_valid_geo_water_lrcposi_nocloud,:]=mlnn.compute_aodnn(l1b.solz[mask_valid_geo_water_lrcposi_nocloud],\
+                        aods[mask_valid_geo_water_lrcposi_nocloud,:] = mlnn.compute_aodnn(l1b.solz[mask_valid_geo_water_lrcposi_nocloud],\
                                                                                          l1b.senz[mask_valid_geo_water_lrcposi_nocloud],\
                                                                                          l1b.relaz[mask_valid_geo_water_lrcposi_nocloud],\
                                                                                          lrc[mask_valid_geo_water_lrcposi_nocloud, :][:, wavelength_mask],\
@@ -510,73 +515,73 @@ for ifile in np.arange(nfiles):
                     # rrs must be retrieved        
                     # if sinfo.sensor == 'HYPSO_HSI':
                     #     lrc = lrc/4
-                    rrs[mask_valid_geo_water_lrcposi_nocloud,:]=mlnn.compute_rrsnn(l1b.solz[mask_valid_geo_water_lrcposi_nocloud],\
+                    rrs[mask_valid_geo_water_lrcposi_nocloud,:] = mlnn.compute_rrsnn(l1b.solz[mask_valid_geo_water_lrcposi_nocloud],\
                                                                                      l1b.senz[mask_valid_geo_water_lrcposi_nocloud],\
                                                                                      l1b.relaz[mask_valid_geo_water_lrcposi_nocloud],\
                                                                                      lrc[mask_valid_geo_water_lrcposi_nocloud, :][:, wavelength_mask])
 
                     if 'aph' in l2_prod:
-                        aph[mask_valid_geo_water_lrcposi_nocloud,:]=mlnn.compute_aphnn(rrs[mask_valid_geo_water_lrcposi_nocloud,:])
+                        aph[mask_valid_geo_water_lrcposi_nocloud,:] = mlnn.compute_aphnn(rrs[mask_valid_geo_water_lrcposi_nocloud,:])
                     if 'adg' in l2_prod:
-                        adg[mask_valid_geo_water_lrcposi_nocloud,:]=mlnn.compute_adgnn(rrs[mask_valid_geo_water_lrcposi_nocloud,:])
+                        adg[mask_valid_geo_water_lrcposi_nocloud,:] = mlnn.compute_adgnn(rrs[mask_valid_geo_water_lrcposi_nocloud,:])
                     if 'bbp' in l2_prod:
-                        bbp[mask_valid_geo_water_lrcposi_nocloud,:]=mlnn.compute_bbpnn(rrs[mask_valid_geo_water_lrcposi_nocloud,:])
+                        bbp[mask_valid_geo_water_lrcposi_nocloud,:] = mlnn.compute_bbpnn(rrs[mask_valid_geo_water_lrcposi_nocloud,:])
                     if 'bt' in l2_prod:
-                        bp[mask_valid_geo_water_lrcposi_nocloud,:]=mlnn.compute_bpnn(rrs[mask_valid_geo_water_lrcposi_nocloud,:])
+                        bp[mask_valid_geo_water_lrcposi_nocloud,:] = mlnn.compute_bpnn(rrs[mask_valid_geo_water_lrcposi_nocloud,:])
                     if 'at' in l2_prod:
-                        ap[mask_valid_geo_water_lrcposi_nocloud,:]=mlnn.compute_apnn(rrs[mask_valid_geo_water_lrcposi_nocloud,:])
+                        ap[mask_valid_geo_water_lrcposi_nocloud,:] = mlnn.compute_apnn(rrs[mask_valid_geo_water_lrcposi_nocloud,:])
                 else:                    
-                    blockmask=np.zeros([l1b_dim[0],l1b_dim[1]],dtype='bool')
-                    nblocks_x=int(np.ceil(l1b_dim[1]/block_size))
-                    nblocks_y=int(np.ceil(l1b_dim[0]/block_size))
+                    blockmask = np.zeros([l1b_dim[0], l1b_dim[1]], dtype='bool')
+                    nblocks_x = int(np.ceil(l1b_dim[1] / block_size))
+                    nblocks_y = int(np.ceil(l1b_dim[0] / block_size))
                     print('Processing image in {} blocks ... '.format(nblocks_x*nblocks_y))
-                    block_boundary_x=np.zeros(nblocks_x+1,dtype=int)
-                    block_boundary_y=np.zeros(nblocks_y+1,dtype=int)
+                    block_boundary_x = np.zeros(nblocks_x + 1, dtype=int)
+                    block_boundary_y = np.zeros(nblocks_y + 1, dtype=int)
                     if nblocks_x == 1:
                         block_boundary_x[0] = 0
                         block_boundary_x[1] = l1b_dim[1]
                     else:
-                        block_boundary_x[0:nblocks_x]=np.arange(0,l1b_dim[1],block_size)
+                        block_boundary_x[0:nblocks_x] = np.arange(0,l1b_dim[1], block_size)
                         block_boundary_x[nblocks_x] = l1b_dim[1]
                     if nblocks_y == 1:
                         block_boundary_y[0] = 0
                         block_boundary_y[1] = l1b_dim[0]
                     else:
-                        block_boundary_y[0:nblocks_y]=np.arange(0,l1b_dim[0],block_size)
+                        block_boundary_y[0:nblocks_y] = np.arange(0,l1b_dim[0], block_size)
                         block_boundary_y[nblocks_y] = l1b_dim[0]
                     for iby in np.arange(nblocks_y):
                         for ibx in np.arange(nblocks_x):                            
-                            print('Porcessing block ',iby*nblocks_y+ibx+1)
-                            blockmask[:,:] = False
-                            blockmask[block_boundary_y[iby]:block_boundary_y[iby+1],block_boundary_x[ibx]:block_boundary_x[ibx+1]] = True                        
+                            print('Porcessing block ',iby*nblocks_y + ibx + 1)
+                            blockmask[:, :] = False
+                            blockmask[block_boundary_y[iby]:block_boundary_y[iby + 1], block_boundary_x[ibx]:block_boundary_x[ibx + 1]] = True                        
                             process_mask = mask_valid_geo_water_lrcposi_nocloud & blockmask
-                            if np.sum(process_mask)>0:
-                                oos_flag[process_mask],lrc_aann[process_mask,:]=mlnn.compute_aann(l1b.solz[process_mask],\
+                            if np.sum(process_mask) > 0:
+                                oos_flag[process_mask], lrc_aann[process_mask, :] = mlnn.compute_aann(l1b.solz[process_mask],\
                                                                          l1b.senz[process_mask],\
                                                                          l1b.relaz[process_mask],\
                                                                          lrc[process_mask,:],\
                                                                          l1b_rh[process_mask])
                                 if 'aod' in l2_prod: 
-                                    aods[process_mask,:]=mlnn.compute_aodnn(l1b.solz[process_mask],\
+                                    aods[process_mask,:] = mlnn.compute_aodnn(l1b.solz[process_mask],\
                                                                              l1b.senz[process_mask],\
                                                                              l1b.relaz[process_mask],\
                                                                              lrc[process_mask,:],\
                                                                              l1b_rh[process_mask])
                                 # rrs must be retrieved
-                                rrs[process_mask,:]=mlnn.compute_rrsnn(l1b.solz[process_mask],\
+                                rrs[process_mask,:] = mlnn.compute_rrsnn(l1b.solz[process_mask],\
                                                                          l1b.senz[process_mask],\
                                                                          l1b.relaz[process_mask],\
                                                                          lrc[process_mask,:])
                                 if 'aph' in l2_prod:
-                                    aph[process_mask,:]=mlnn.compute_aphnn(rrs[process_mask,:])
+                                    aph[process_mask,:] = mlnn.compute_aphnn(rrs[process_mask,:])
                                 if 'adg' in l2_prod:
-                                    adg[process_mask,:]=mlnn.compute_adgnn(rrs[process_mask,:])
+                                    adg[process_mask,:] = mlnn.compute_adgnn(rrs[process_mask,:])
                                 if 'bbp' in l2_prod:
-                                    bbp[process_mask,:]=mlnn.compute_bbpnn(rrs[process_mask,:])
+                                    bbp[process_mask,:] = mlnn.compute_bbpnn(rrs[process_mask,:])
                                 if 'at' in l2_prod:
-                                    ap[process_mask,:]=mlnn.compute_apnn(rrs[process_mask,:])
+                                    ap[process_mask,:] = mlnn.compute_apnn(rrs[process_mask,:])
                                 if 'bt' in l2_prod:
-                                    bp[process_mask,:]=mlnn.compute_bpnn(rrs[process_mask,:])
+                                    bp[process_mask,:] = mlnn.compute_bpnn(rrs[process_mask,:])
             
                 mask_valid_geo_water_lrcposi_nocloud_oos = mask_valid_geo_water_lrcposi_nocloud & oos_flag
                 l2_mask[mask_valid_geo_water_lrcposi_nocloud_oos] = 256
@@ -584,90 +589,90 @@ for ifile in np.arange(nfiles):
                 # retrieve CHL, CDOM and TSM
                 # chl_ocx[mask_valid_geo_water_lrcposi_nocloud]=chl.get_chl_ocx(rrs[mask_valid_geo_water_lrcposi_nocloud,:])
                 if 'chl' in l2_prod:
-                    chl_oci[mask_valid_geo_water_lrcposi_nocloud]=chl.get_chl_oci(rrs[mask_valid_geo_water_lrcposi_nocloud,:])
-                    chl_yoc[mask_valid_geo_water_lrcposi_nocloud]=chl.get_chl_yoc(rrs[mask_valid_geo_water_lrcposi_nocloud,:])
+                    chl_oci[mask_valid_geo_water_lrcposi_nocloud] = chl.get_chl_oci(rrs[mask_valid_geo_water_lrcposi_nocloud, :])
+                    chl_yoc[mask_valid_geo_water_lrcposi_nocloud] = chl.get_chl_yoc(rrs[mask_valid_geo_water_lrcposi_nocloud, :])
                 if 'tsm' in l2_prod:
-                    tsm_yoc[mask_valid_geo_water_lrcposi_nocloud]=tsm.get_tsm_yoc(rrs[mask_valid_geo_water_lrcposi_nocloud,:])
+                    tsm_yoc[mask_valid_geo_water_lrcposi_nocloud] = tsm.get_tsm_yoc(rrs[mask_valid_geo_water_lrcposi_nocloud, :])
 
                 # write L2 file in H5 format
-                print('Writing level-2 file {} ... '.format(os.path.splitext(fname)[0]+'_L2_OCSMART.h5'))
-                hf = h5py.File(L2_path+os.path.splitext(fname)[0]+'_L2_OCSMART.h5','w')    
-                hf.create_dataset('Latitude',dtype='float32',data = l1b.latitude,compression="gzip", compression_opts=9)
-                hf.create_dataset('Longitude',dtype='float32',data = l1b.longitude,compression="gzip", compression_opts=9)
-                hf.create_dataset('Solar_zenith',dtype='float32',data = l1b.solz,compression="gzip", compression_opts=9)
-                hf.create_dataset('Sensor_zenith',dtype='float32',data = l1b.senz,compression="gzip", compression_opts=9)
-                hf.create_dataset('Relative_azimuth',dtype='float32',data = l1b.relaz,compression="gzip", compression_opts=9) 
-                hf.create_dataset('L2_flags',dtype='int16',data = l2_mask,compression="gzip", compression_opts=9)
+                print('Writing level-2 file {} ... '.format(os.path.splitext(fname)[0] + '_L2_OCSMART.h5'))
+                hf = h5py.File(L2_path + os.path.splitext(fname)[0] + '_L2_OCSMART.h5', 'w')    
+                hf.create_dataset('Latitude', dtype='float32', data = l1b.latitude, compression="gzip", compression_opts=9)
+                hf.create_dataset('Longitude', dtype='float32', data = l1b.longitude, compression="gzip", compression_opts=9)
+                hf.create_dataset('Solar_zenith', dtype='float32', data = l1b.solz, compression="gzip", compression_opts=9)
+                hf.create_dataset('Sensor_zenith', dtype='float32', data = l1b.senz, compression="gzip", compression_opts=9)
+                hf.create_dataset('Relative_azimuth', dtype='float32', data = l1b.relaz, compression="gzip", compression_opts=9) 
+                hf.create_dataset('L2_flags', dtype='int16', data = l2_mask,compression="gzip", compression_opts=9)
 
                 if 'pressure' in l2_prod:
-                    hf.create_dataset('pressure', dtype=datatype, data = l1b_pressure[:,:], compression="gzip", compression_opts=9)
+                    hf.create_dataset('pressure', dtype=datatype, data = l1b_pressure[:, :], compression="gzip", compression_opts=9)
                 if 'relative_humidity' in l2_prod:
-                    hf.create_dataset('relative_humidity', dtype=datatype, data = l1b_rh[:,:], compression="gzip", compression_opts=9)
+                    hf.create_dataset('relative_humidity', dtype=datatype, data = l1b_rh[:, :], compression="gzip", compression_opts=9)
                 if 'wind_speed' in l2_prod:
-                    hf.create_dataset('wind_speed', dtype=datatype, data = l1b_ws[:,:], compression="gzip", compression_opts=9)
+                    hf.create_dataset('wind_speed', dtype=datatype, data = l1b_ws[:, :], compression="gzip", compression_opts=9)
 
                 if 'chl' in l2_prod:
-                    hf.create_dataset('chlor_a(oci)',dtype=datatype,data = chl_oci,compression="gzip", compression_opts=9)
-                    hf.create_dataset('chlor_a(yoc)',dtype=datatype,data = chl_yoc,compression="gzip", compression_opts=9)
+                    hf.create_dataset('chlor_a(oci)', dtype=datatype,data = chl_oci, compression="gzip", compression_opts=9)
+                    hf.create_dataset('chlor_a(yoc)', dtype=datatype,data = chl_yoc, compression="gzip", compression_opts=9)
                 if 'tsm' in l2_prod:    
-                    hf.create_dataset('tsm(yoc)',dtype=datatype,data = tsm_yoc,compression="gzip", compression_opts=9)
+                    hf.create_dataset('tsm(yoc)', dtype=datatype, data = tsm_yoc, compression="gzip", compression_opts=9)
                 
                 if 'aod' in l2_prod:
                     gw = hf.create_group('AOD')
                     for i in np.arange(mlnn.aodnn_layers[-1]):
-                        gw.create_dataset('AOD_'+str(training_bands[i])+'nm',dtype=datatype,data = aods[:,:,i],compression="gzip", compression_opts=9)
+                        gw.create_dataset('AOD_' + str(training_bands[i]) + 'nm', dtype=datatype, data=aods[:,:,i], compression="gzip", compression_opts=9)
                 if 'rrs' in l2_prod:
                     gw = hf.create_group('Rrs')    
                     for i in np.arange(mlnn.rrsnn_layers[-1]):
-                        gw.create_dataset('Rrs_'+str(training_bands[i])+'nm',dtype=datatype,data = rrs[:,:,i],compression="gzip", compression_opts=9)
+                        gw.create_dataset('Rrs_' + str(training_bands[i]) + 'nm', dtype=datatype, data=rrs[:,:,i], compression="gzip", compression_opts=9)
                 if 'aph' in l2_prod:
                     gw = hf.create_group('aph')    
                     for i in np.arange(mlnn.aphnn_layers[-1]):
-                        gw.create_dataset('aph_'+str(training_bands[i])+'nm',dtype=datatype,data = aph[:,:,i],compression="gzip", compression_opts=9)
+                        gw.create_dataset('aph_' + str(training_bands[i]) + 'nm', dtype=datatype, data=aph[:,:,i], compression="gzip", compression_opts=9)
                 if 'adg' in l2_prod:
                     gw = hf.create_group('adg')    
                     for i in np.arange(mlnn.adgnn_layers[-1]):
-                        gw.create_dataset('adg_'+str(training_bands[i])+'nm',dtype=datatype,data = adg[:,:,i],compression="gzip", compression_opts=9)
+                        gw.create_dataset('adg_' + str(training_bands[i]) + 'nm', dtype=datatype, data=adg[:,:,i], compression="gzip", compression_opts=9)
                 if 'bbp' in l2_prod:
                     gw = hf.create_group('bbp')    
                     for i in np.arange(mlnn.bbpnn_layers[-1]):
-                        gw.create_dataset('bbp_'+str(training_bands[i])+'nm',dtype=datatype,data = bbp[:,:,i],compression="gzip", compression_opts=9)
+                        gw.create_dataset('bbp_' + str(training_bands[i]) + 'nm', dtype=datatype, data=bbp[:,:,i], compression="gzip", compression_opts=9)
                 if 'at' in l2_prod:
                     gw = hf.create_group('at')    
                     for i in np.arange(mlnn.apnn_layers[-1]):
-                        gw.create_dataset('at_'+str(training_bands[i])+'nm',dtype=datatype,data = ap[:,:,i],compression="gzip", compression_opts=9) 
+                        gw.create_dataset('at_' + str(training_bands[i]) + 'nm', dtype=datatype, data=ap[:,:,i], compression="gzip", compression_opts=9) 
                 if 'bt' in l2_prod:
                     gw = hf.create_group('bt')    
                     for i in np.arange(mlnn.bpnn_layers[-1]):
-                        gw.create_dataset('bt_'+str(training_bands[i])+'nm',dtype=datatype,data = bp[:,:,i],compression="gzip", compression_opts=9) 
+                        gw.create_dataset('bt_' + str(training_bands[i]) + 'nm', dtype=datatype, data = bp[:,:,i], compression="gzip", compression_opts=9) 
                 if 'Lt' in l2_prod:
                     gw = hf.create_group('Lt')
                     for i in np.arange(mlnn.aodnn_layers[-1]):
-                        gw.create_dataset('Lt_'+str(training_bands[i])+'nm',dtype=datatype,data = l1b.reflectance[:,:,i],compression="gzip", compression_opts=9)
+                        gw.create_dataset('Lt_' + str(training_bands[i]) + 'nm', dtype=datatype, data = l1b.reflectance[:,:,i], compression="gzip", compression_opts=9)
                 if 'Lrc' in l2_prod:
                     gw = hf.create_group('Lrc')
                     for i in np.arange(mlnn.aodnn_layers[-1]):
-                        gw.create_dataset('Lrc_'+str(training_bands[i])+'nm',dtype=datatype,data = lrc[:,:,i],compression="gzip", compression_opts=9)
+                        gw.create_dataset('Lrc_' + str(training_bands[i]) + 'nm', dtype=datatype, data = lrc[:,:,i], compression="gzip", compression_opts=9)
                 if 'Lr' in l2_prod:
                     gw = hf.create_group('Lr')
                     for i in np.arange(mlnn.aodnn_layers[-1]):
-                        gw.create_dataset('Lr_'+str(training_bands[i])+'nm',dtype=datatype,data = l1b_ray[:,:,i],compression="gzip", compression_opts=9)
+                        gw.create_dataset('Lr_' + str(training_bands[i]) + 'nm', dtype=datatype, data = l1b_ray[:,:,i], compression="gzip", compression_opts=9)
                 if 'tg_sol_oz' in l2_prod:
                     gw = hf.create_group('tg_sol_oz')
                     for i in np.arange(mlnn.aodnn_layers[-1]):
-                        gw.create_dataset('tg_sol_oz_'+str(training_bands[i])+'nm',dtype=datatype,data = solar_zenith_oz[:,:,i],compression="gzip", compression_opts=9)
+                        gw.create_dataset('tg_sol_oz_' + str(training_bands[i]) + 'nm', dtype=datatype, data = solar_zenith_oz[:,:,i], compression="gzip", compression_opts=9)
                 if 'tg_sol_no2' in l2_prod:
                     gw = hf.create_group('tg_sol_no2')
                     for i in np.arange(mlnn.aodnn_layers[-1]):
-                        gw.create_dataset('tg_sol_no2_'+str(training_bands[i])+'nm',dtype=datatype,data = solar_zenith_no2[:,:,i],compression="gzip", compression_opts=9)
+                        gw.create_dataset('tg_sol_no2_' + str(training_bands[i]) + 'nm', dtype=datatype, data = solar_zenith_no2[:,:,i], compression="gzip", compression_opts=9)
                 if 'tg_sol_n2o' in l2_prod:
                     gw = hf.create_group('tg_sol_n2o')
                     for i in np.arange(mlnn.aodnn_layers[-1]):
-                        gw.create_dataset('tg_sol_n2o_'+str(training_bands[i])+'nm',dtype=datatype,data = solar_zenith_n2o[:,:,i],compression="gzip", compression_opts=9)
+                        gw.create_dataset('tg_sol_n2o_' + str(training_bands[i]) + 'nm', dtype=datatype, data = solar_zenith_n2o[:,:,i], compression="gzip", compression_opts=9)
                 if 'tg_sol_co' in l2_prod:
                     gw = hf.create_group('tg_sol_co')
                     for i in np.arange(mlnn.aodnn_layers[-1]):
-                        gw.create_dataset('tg_sol_co_'+str(training_bands[i])+'nm',dtype=datatype,data = solar_zenith_co[:,:,i],compression="gzip", compression_opts=9)
+                        gw.create_dataset('tg_sol_co_' + str(training_bands[i]) + 'nm', dtype=datatype, data = solar_zenith_co[:,:,i], compression="gzip", compression_opts=9)
                 if 'tg_sol_co2' in l2_prod:
                     gw = hf.create_group('tg_sol_co2')
                     for i in np.arange(mlnn.aodnn_layers[-1]):
@@ -675,27 +680,27 @@ for ifile in np.arange(nfiles):
                 if 'tg_sol_ch4' in l2_prod:
                     gw = hf.create_group('tg_sol_ch4')
                     for i in np.arange(mlnn.aodnn_layers[-1]):
-                        gw.create_dataset('tg_sol_ch4_'+str(training_bands[i])+'nm',dtype=datatype,data = solar_zenith_ch4[:,:,i],compression="gzip", compression_opts=9)
+                        gw.create_dataset('tg_sol_ch4_' + str(training_bands[i]) + 'nm',dtype=datatype, data = solar_zenith_ch4[:,:,i], compression="gzip", compression_opts=9)
                 if 'tg_sol_h2o' in l2_prod:
                     gw = hf.create_group('tg_sol_h2o')
                     for i in np.arange(mlnn.aodnn_layers[-1]):
-                        gw.create_dataset('tg_sol_h2o_'+str(training_bands[i])+'nm',dtype=datatype,data = solar_zenith_h2o[:,:,i],compression="gzip", compression_opts=9)
+                        gw.create_dataset('tg_sol_h2o_' + str(training_bands[i]) + 'nm', dtype=datatype, data = solar_zenith_h2o[:,:,i], compression="gzip", compression_opts=9)
                 if 'tg_sol_o2' in l2_prod:
                     gw = hf.create_group('tg_sol_o2')
                     for i in np.arange(mlnn.aodnn_layers[-1]):
-                        gw.create_dataset('tg_sol_o2_'+str(training_bands[i])+'nm',dtype=datatype,data = solar_zenith_o2[:,:,i],compression="gzip", compression_opts=9)
+                        gw.create_dataset('tg_sol_o2_' + str(training_bands[i]) + 'nm', dtype=datatype, data = solar_zenith_o2[:,:,i], compression="gzip", compression_opts=9)
                 if 'tg_sol' in l2_prod:
                     gw = hf.create_group('tg_sol')
                     for i in np.arange(mlnn.aodnn_layers[-1]):
-                        gw.create_dataset('tg_sol_'+str(training_bands[i])+'nm',dtype=datatype,data = tg_sol[:,:,i],compression="gzip", compression_opts=9)
+                        gw.create_dataset('tg_sol_' + str(training_bands[i]) + 'nm', dtype=datatype, data = tg_sol[:,:,i], compression="gzip", compression_opts=9)
                 if 'tg_sen' in l2_prod:
                     gw = hf.create_group('tg_sen')
                     for i in np.arange(mlnn.aodnn_layers[-1]):
-                        gw.create_dataset('tg_sen_'+str(training_bands[i])+'nm',dtype=datatype,data = tg_sen[:,:,i],compression="gzip", compression_opts=9)
+                        gw.create_dataset('tg_sen_' + str(training_bands[i]) + 'nm', dtype=datatype, data = tg_sen[:,:,i], compression="gzip", compression_opts=9)
                 if 'Lwp' in l2_prod:
                     gw = hf.create_group('Lwp')
                     for i in np.arange(mlnn.aodnn_layers[-1]):
-                        gw.create_dataset('Lwp_'+str(training_bands[i])+'nm',dtype=datatype,data = l1b_wcaps[:,:,i],compression="gzip", compression_opts=9)
+                        gw.create_dataset('Lwp_' + str(training_bands[i]) + 'nm', dtype=datatype, data = l1b_wcaps[:,:,i], compression="gzip", compression_opts=9)
                 
                 hf.close()
                 print('Processing finished in %.2f second.\n'%(time.time()-t_start))
