@@ -30,6 +30,18 @@ from src.ocparam import CHL, TSM, CDOM
 datatype = 'float32'
 DEBUG_ANCILLARY_ARRAYS = False  # Set to True if ancillary arrays (e.g. ozone concentration, no2_concentration, etc.) need to be populated (e.g. for easy viewing in the debugger)
 
+def print_L2_write_warning():
+    GAS_BITS = {'oz': 1, 'co2': 2, 'no2': 4, 'h2o': 8, 'co': 16, 'ch4': 32, 'n2o': 64, 'o2': 128}
+    
+    for prod in l2_prod:
+        for prefix in ('tg_sol_', 'tg_sen_'):
+            if prod.startswith(prefix):
+                gas = prod[len(prefix):]
+                if gas in GAS_BITS and not (sinfo.gasid & GAS_BITS[gas]):
+                    print(f"\033[33mWarning: '{prod}' was requested in l2_prod but {sinfo.sensor} "
+                        f"does not apply a '{gas}' correction (gasid={sinfo.gasid}). "
+                        f"This product will not be written to the L2 file.\033[0m")
+
 #######  Read Input parameters  #####################
 input_param = {}
 OCSMART_script_dir = str(Path(sys.argv[0]).resolve().parent)
@@ -139,7 +151,8 @@ for ifile in np.arange(nfiles):
     print('Processing file {}  {}'.format(ifile+1, fname))    
     
     # get sensor information
-    sinfo=sensorinfo(L1_path+fname)    
+    sinfo = sensorinfo(L1_path + fname)    
+
     if 'geo_path' in input_param.keys():    
         GEO_path = input_param['geo_path']
     else:
@@ -151,6 +164,8 @@ for ifile in np.arange(nfiles):
         else:                
             GEO_path = ''
     if sinfo.sensor_status == 0:
+        print_L2_write_warning()
+                    
         print('Sensor :',mission[sinfo.sat]) 
         
         # read level1B data
