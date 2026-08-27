@@ -256,21 +256,23 @@ for ifile in np.arange(nfiles):
                 l1b_wcaps = np.full(l1b_dim, np.nan, dtype=datatype)
                 lrc = np.full(l1b_dim, -999., dtype=datatype)
                 cmask = np.zeros([l1b_dim[0], l1b_dim[1]], dtype='bool')
-                glint_coeff = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
+                # glint_coeff = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
                 blockmask = np.zeros([l1b_dim[0], l1b_dim[1]], dtype='bool')
                 oos_flag = np.zeros([l1b_dim[0], l1b_dim[1]], dtype='bool')
-                aods = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.aodnn_layers[-1])], np.nan, dtype=datatype)
                 rrs = np.full([l1b_dim[0],l1b_dim[1], int(mlnn.rrsnn_layers[-1])], np.nan, dtype=datatype)
                 lrc_aann = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.aann_layers[-1])], np.nan, dtype=datatype)
-                chl_oci = np.full([l1b_dim[0], l1b_dim[1]], np.nan)
-                chl_ocx = np.full([l1b_dim[0], l1b_dim[1]], np.nan)
-                chl_yoc = np.full([l1b_dim[0], l1b_dim[1]], np.nan)
-                tsm_yoc = np.full([l1b_dim[0],l1b_dim[1]], np.nan)
-                aph = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.aphnn_layers[-1])], np.nan, dtype=datatype)
-                adg = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.adgnn_layers[-1])], np.nan, dtype=datatype)
-                bbp = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.bbpnn_layers[-1])], np.nan, dtype=datatype)
-                ap = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.apnn_layers[-1])], np.nan, dtype=datatype)
-                bp = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.bpnn_layers[-1])], np.nan, dtype=datatype)
+                chl_oci = np.full([l1b_dim[0], l1b_dim[1]], np.nan, dtype=datatype)
+                # chl_ocx = np.full([l1b_dim[0], l1b_dim[1]], np.nan, dtype=datatype)
+                chl_yoc = np.full([l1b_dim[0], l1b_dim[1]], np.nan, dtype=datatype)
+                tsm_yoc = np.full([l1b_dim[0],l1b_dim[1]], np.nan, dtype=datatype)
+
+                # The conditional statements for the following are so that we can save memory if the user doesn't request that product in OCSMART_Input.txt
+                aods = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.aodnn_layers[-1])], np.nan, dtype=datatype) if 'aod' in l2_prod else None
+                aph = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.aphnn_layers[-1])], np.nan, dtype=datatype) if 'aph' in l2_prod else None
+                adg = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.adgnn_layers[-1])], np.nan, dtype=datatype) if 'adg' in l2_prod else None
+                bbp = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.bbpnn_layers[-1])], np.nan, dtype=datatype) if 'bbp' in l2_prod else None
+                ap = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.apnn_layers[-1])], np.nan, dtype=datatype) if 'at' in l2_prod else None
+                bp = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.bpnn_layers[-1])], np.nan, dtype=datatype) if 'bt' in l2_prod else None
                                 
                 
                 # mask invalid radiances data
@@ -755,79 +757,106 @@ for ifile in np.arange(nfiles):
 
                     # write L2 file in H5 format
                     print('Writing level-2 file {} ... '.format(os.path.splitext(fname)[0] + '_L2_OCSMART.h5'))
+
+                    # Variables are explicitly deleted after writing to the L2 file so that they don't persist while processing subsequent files and use up a bunch of memory
                     
                     hf.create_dataset('Latitude', dtype='float32', data = l1b.latitude, compression="gzip", compression_opts=9)
+                    del l1b.latitude
                     hf.create_dataset('Longitude', dtype='float32', data = l1b.longitude, compression="gzip", compression_opts=9)
+                    del l1b.longitude
                     hf.create_dataset('Solar_zenith', dtype='float32', data = l1b.solz, compression="gzip", compression_opts=9)
+                    del l1b.solz
                     hf.create_dataset('Sensor_zenith', dtype='float32', data = l1b.senz, compression="gzip", compression_opts=9)
-                    hf.create_dataset('Relative_azimuth', dtype='float32', data = l1b.relaz, compression="gzip", compression_opts=9) 
+                    del l1b.senz
+                    hf.create_dataset('Relative_azimuth', dtype='float32', data = l1b.relaz, compression="gzip", compression_opts=9)
+                    del l1b.relaz
                     hf.create_dataset('L2_flags', dtype='int16', data = l2_mask,compression="gzip", compression_opts=9)
+                    del l2_mask
 
                     if 'pressure' in l2_prod:
                         hf.create_dataset('pressure', dtype=datatype, data = l1b_pressure[:, :], compression="gzip", compression_opts=9)
+                        del l1b_pressure
                     if 'relative_humidity' in l2_prod:
                         hf.create_dataset('relative_humidity', dtype=datatype, data = l1b_rh[:, :], compression="gzip", compression_opts=9)
+                        del l1b_rh
                     if 'wind_speed' in l2_prod:
                         hf.create_dataset('wind_speed', dtype=datatype, data = l1b_ws[:, :], compression="gzip", compression_opts=9)
+                        del l1b_ws
 
                     if 'chl' in l2_prod:
                         hf.create_dataset('chlor_a(oci)', dtype=datatype,data = chl_oci, compression="gzip", compression_opts=9)
+                        del chl_oci
                         hf.create_dataset('chlor_a(yoc)', dtype=datatype,data = chl_yoc, compression="gzip", compression_opts=9)
+                        del chl_yoc
                     if 'tsm' in l2_prod:    
                         hf.create_dataset('tsm(yoc)', dtype=datatype, data = tsm_yoc, compression="gzip", compression_opts=9)
+                        del tsm_yoc
                     
                     if 'aod' in l2_prod:
                         gw = hf.create_group('AOD')
                         for i in np.arange(mlnn.aodnn_layers[-1]):
                             gw.create_dataset('AOD_' + str(training_bands[i]) + 'nm', dtype=datatype, data=aods[:,:,i], compression="gzip", compression_opts=9)
+                            del aods
                     if 'rrs' in l2_prod:
                         gw = hf.create_group('Rrs')    
                         for i in np.arange(mlnn.rrsnn_layers[-1]):
                             gw.create_dataset('Rrs_' + str(training_bands[i]) + 'nm', dtype=datatype, data=rrs[:,:,i], compression="gzip", compression_opts=9)
+                            del rrs
                     if 'aph' in l2_prod:
                         gw = hf.create_group('aph')    
                         for i in np.arange(mlnn.aphnn_layers[-1]):
                             gw.create_dataset('aph_' + str(training_bands[i]) + 'nm', dtype=datatype, data=aph[:,:,i], compression="gzip", compression_opts=9)
+                            del aph
                     if 'adg' in l2_prod:
                         gw = hf.create_group('adg')    
                         for i in np.arange(mlnn.adgnn_layers[-1]):
                             gw.create_dataset('adg_' + str(training_bands[i]) + 'nm', dtype=datatype, data=adg[:,:,i], compression="gzip", compression_opts=9)
+                            del adg
                     if 'bbp' in l2_prod:
                         gw = hf.create_group('bbp')    
                         for i in np.arange(mlnn.bbpnn_layers[-1]):
                             gw.create_dataset('bbp_' + str(training_bands[i]) + 'nm', dtype=datatype, data=bbp[:,:,i], compression="gzip", compression_opts=9)
+                            del bbp
                     if 'at' in l2_prod:
                         gw = hf.create_group('at')    
                         for i in np.arange(mlnn.apnn_layers[-1]):
-                            gw.create_dataset('at_' + str(training_bands[i]) + 'nm', dtype=datatype, data=ap[:,:,i], compression="gzip", compression_opts=9) 
+                            gw.create_dataset('at_' + str(training_bands[i]) + 'nm', dtype=datatype, data=ap[:,:,i], compression="gzip", compression_opts=9)
+                            del ap
                     if 'bt' in l2_prod:
                         gw = hf.create_group('bt')    
                         for i in np.arange(mlnn.bpnn_layers[-1]):
-                            gw.create_dataset('bt_' + str(training_bands[i]) + 'nm', dtype=datatype, data = bp[:,:,i], compression="gzip", compression_opts=9) 
+                            gw.create_dataset('bt_' + str(training_bands[i]) + 'nm', dtype=datatype, data = bp[:,:,i], compression="gzip", compression_opts=9)
+                            del bp
                     if 'Lt' in l2_prod:
                         gw = hf.create_group('Lt')
                         for i in np.arange(mlnn.aodnn_layers[-1]):
                             gw.create_dataset('Lt_' + str(training_bands[i]) + 'nm', dtype=datatype, data = l1b.reflectance[:,:,i], compression="gzip", compression_opts=9)
+                            del l1b.reflectance
                     if 'Lrc' in l2_prod:
                         gw = hf.create_group('Lrc')
                         for i in np.arange(mlnn.aodnn_layers[-1]):
                             gw.create_dataset('Lrc_' + str(training_bands[i]) + 'nm', dtype=datatype, data = lrc[:,:,i], compression="gzip", compression_opts=9)
+                            del lrc
                     if 'Lr' in l2_prod:
                         gw = hf.create_group('Lr')
                         for i in np.arange(mlnn.aodnn_layers[-1]):
                             gw.create_dataset('Lr_' + str(training_bands[i]) + 'nm', dtype=datatype, data = l1b_ray[:,:,i], compression="gzip", compression_opts=9)
+                            del l1b_ray
                     if 'tg_sol' in l2_prod:
                         gw = hf.create_group('tg_sol')
                         for i in np.arange(mlnn.aodnn_layers[-1]):
                             gw.create_dataset('tg_sol_' + str(training_bands[i]) + 'nm', dtype=datatype, data = tg_sol[:,:,i], compression="gzip", compression_opts=9)
+                            del tg_sol
                     if 'tg_sen' in l2_prod:
                         gw = hf.create_group('tg_sen')
                         for i in np.arange(mlnn.aodnn_layers[-1]):
                             gw.create_dataset('tg_sen_' + str(training_bands[i]) + 'nm', dtype=datatype, data = tg_sen[:,:,i], compression="gzip", compression_opts=9)
+                            del tg_sen
                     if 'Lwp' in l2_prod:
                         gw = hf.create_group('Lwp')
                         for i in np.arange(mlnn.aodnn_layers[-1]):
                             gw.create_dataset('Lwp_' + str(training_bands[i]) + 'nm', dtype=datatype, data = l1b_wcaps[:,:,i], compression="gzip", compression_opts=9)
+                            del l1b_wcaps
                 
                 print('Processing finished in %.2f second.\n'%(time.time()-t_start))
             else:
