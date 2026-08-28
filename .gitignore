@@ -224,3 +224,5 @@ L1B/
 !L1B/.gitkeep
 L2/
 !L2/.gitkeep
+DataDownloadAuthentication/.netrc
+DataDownloadAuthentication/.urs_cookies
