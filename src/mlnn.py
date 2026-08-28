@@ -10,6 +10,8 @@ import h5py
 import sys
 from pathlib import Path
 
+from src.shared_constants import datatype
+
 class MLNN(object):
 
     def __init__(self, sensorinfo=None):
@@ -31,8 +33,8 @@ class MLNN(object):
         self.aann_weights=[]
         self.aann_bias=[]
         for i in range(self.aann_nlayers-1):
-            self.aann_weights.append(np.array(f['Weights/Layer'+str(i+1)]))
-            self.aann_bias.append(np.array(f['Bias/Layer'+str(i+1)]))
+            self.aann_weights.append(np.array(f['Weights/Layer'+str(i+1)], dtype=datatype))
+            self.aann_bias.append(np.array(f['Bias/Layer'+str(i+1)], dtype=datatype))
    
         #read aodnn network
 #        aodnn_fname=self.path+self.sensor+'/'+self.sensor+'_Lt_aodNN.h5'
@@ -45,8 +47,8 @@ class MLNN(object):
         self.aodnn_weights=[]
         self.aodnn_bias=[]
         for i in range(self.aodnn_nlayers-1):
-            self.aodnn_weights.append(np.array(f['Weights/Layer'+str(i+1)]))
-            self.aodnn_bias.append(np.array(f['Bias/Layer'+str(i+1)]))	
+            self.aodnn_weights.append(np.array(f['Weights/Layer'+str(i+1)], dtype=datatype))
+            self.aodnn_bias.append(np.array(f['Bias/Layer'+str(i+1)], dtype=datatype))	
     
         #read rrsnn network
 #        rrsnn_fname=self.path+self.sensor+'/'+self.sensor+'_Lt_rrsNN.h5'
@@ -59,8 +61,8 @@ class MLNN(object):
         self.rrsnn_weights=[]
         self.rrsnn_bias=[]
         for i in range(self.rrsnn_nlayers-1):
-            self.rrsnn_weights.append(np.array(f['Weights/Layer'+str(i+1)]))
-            self.rrsnn_bias.append(np.array(f['Bias/Layer'+str(i+1)]))
+            self.rrsnn_weights.append(np.array(f['Weights/Layer'+str(i+1)], dtype=datatype))
+            self.rrsnn_bias.append(np.array(f['Bias/Layer'+str(i+1)], dtype=datatype))
         
         if self.sensor == 'OLCI':
             # read Lrc_LrcaNN network
@@ -73,8 +75,8 @@ class MLNN(object):
             self.LrcaNN_weights=[]                 
             self.LrcaNN_bias=[]
             for i in range(self.LrcaNN_nlayers-1):
-                self.LrcaNN_weights.append(np.array(f['Weights/Layer'+str(i+1)]))
-                self.LrcaNN_bias.append(np.array(f['Bias/Layer'+str(i+1)]))
+                self.LrcaNN_weights.append(np.array(f['Weights/Layer'+str(i+1)], dtype=datatype))
+                self.LrcaNN_bias.append(np.array(f['Bias/Layer'+str(i+1)], dtype=datatype))
         
         #read iopnn network
 #        iopnn_fname=self.path+self.sensor+'/'+self.sensor+'_OCIOPNN.h5'
@@ -86,8 +88,8 @@ class MLNN(object):
 #        self.iopnn_weights=[]
 #        self.iopnn_bias=[]
 #        for i in range(self.iopnn_nlayers-1):
-#            self.iopnn_weights.append(np.array(f['Weights/Layer'+str(i+1)]))
-#            self.iopnn_bias.append(np.array(f['Bias/Layer'+str(i+1)])) 
+#            self.iopnn_weights.append(np.array(f['Weights/Layer'+str(i+1)], dtype=datatype))
+#            self.iopnn_bias.append(np.array(f['Bias/Layer'+str(i+1)], dtype=datatype)) 
 #        
 #        #read ocnn network
 #        ocnn_fname=self.path+self.sensor+'/'+self.sensor+'_ocNN.h5'
@@ -99,8 +101,8 @@ class MLNN(object):
 #        self.ocnn_weights=[]
 #        self.ocnn_bias=[]
 #        for i in range(self.ocnn_nlayers-1):
-#            self.ocnn_weights.append(np.array(f['Weights/Layer'+str(i+1)]))
-#            self.ocnn_bias.append(np.array(f['Bias/Layer'+str(i+1)])) 
+#            self.ocnn_weights.append(np.array(f['Weights/Layer'+str(i+1)], dtype=datatype))
+#            self.ocnn_bias.append(np.array(f['Bias/Layer'+str(i+1)], dtype=datatype)) 
 #            
         #read aphnn network
         aphnn_fname=self.path+self.sensor+'/'+self.sensor+'_aphNN.h5'
@@ -112,8 +114,8 @@ class MLNN(object):
         self.aphnn_weights=[]
         self.aphnn_bias=[]
         for i in range(self.aphnn_nlayers-1):
-            self.aphnn_weights.append(np.array(f['Weights/Layer'+str(i+1)]))
-            self.aphnn_bias.append(np.array(f['Bias/Layer'+str(i+1)])) 
+            self.aphnn_weights.append(np.array(f['Weights/Layer'+str(i+1)], dtype=datatype))
+            self.aphnn_bias.append(np.array(f['Bias/Layer'+str(i+1)], dtype=datatype)) 
     
         #read adgnn network    
         adgnn_fname=self.path+self.sensor+'/'+self.sensor+'_adgNN.h5'
@@ -125,8 +127,8 @@ class MLNN(object):
         self.adgnn_weights=[]
         self.adgnn_bias=[]
         for i in range(self.adgnn_nlayers-1):
-            self.adgnn_weights.append(np.array(f['Weights/Layer'+str(i+1)]))
-            self.adgnn_bias.append(np.array(f['Bias/Layer'+str(i+1)])) 
+            self.adgnn_weights.append(np.array(f['Weights/Layer'+str(i+1)], dtype=datatype))
+            self.adgnn_bias.append(np.array(f['Bias/Layer'+str(i+1)], dtype=datatype)) 
     
         #read bbpnn network    
         bbpnn_fname=self.path+self.sensor+'/'+self.sensor+'_bbpNN.h5'
@@ -138,8 +140,8 @@ class MLNN(object):
         self.bbpnn_weights=[]
         self.bbpnn_bias=[]
         for i in range(self.bbpnn_nlayers-1):
-            self.bbpnn_weights.append(np.array(f['Weights/Layer'+str(i+1)]))
-            self.bbpnn_bias.append(np.array(f['Bias/Layer'+str(i+1)])) 
+            self.bbpnn_weights.append(np.array(f['Weights/Layer'+str(i+1)], dtype=datatype))
+            self.bbpnn_bias.append(np.array(f['Bias/Layer'+str(i+1)], dtype=datatype)) 
    
         #read apnn network
         apnn_fname=self.path+self.sensor+'/'+self.sensor+'_apNN.h5'
@@ -151,8 +153,8 @@ class MLNN(object):
         self.apnn_weights=[]
         self.apnn_bias=[]
         for i in range(self.apnn_nlayers-1):
-            self.apnn_weights.append(np.array(f['Weights/Layer'+str(i+1)]))
-            self.apnn_bias.append(np.array(f['Bias/Layer'+str(i+1)])) 
+            self.apnn_weights.append(np.array(f['Weights/Layer'+str(i+1)], dtype=datatype))
+            self.apnn_bias.append(np.array(f['Bias/Layer'+str(i+1)], dtype=datatype)) 
     
         #read bpnn network    
         bpnn_fname=self.path+self.sensor+'/'+self.sensor+'_bpNN.h5'
@@ -164,15 +166,15 @@ class MLNN(object):
         self.bpnn_weights=[]
         self.bpnn_bias=[]
         for i in range(self.bpnn_nlayers-1):
-            self.bpnn_weights.append(np.array(f['Weights/Layer'+str(i+1)]))
-            self.bpnn_bias.append(np.array(f['Bias/Layer'+str(i+1)]))  
+            self.bpnn_weights.append(np.array(f['Weights/Layer'+str(i+1)], dtype=datatype))
+            self.bpnn_bias.append(np.array(f['Bias/Layer'+str(i+1)], dtype=datatype))  
  
     def compute_aann(self, solz, senz, relaz, lrc, rh):
         print('Checking Out-of-Scope spectral shape ... ')
         #rebuild aaNN and compute data
         ncase=len(solz) 
         nlayers=len(self.aann_layers)
-        aainput=np.zeros((ncase,int(self.aann_layers[0])))
+        aainput=np.zeros((ncase,int(self.aann_layers[0])), dtype=datatype)
         aainput[:,0]=np.cos(np.deg2rad(solz))
         aainput[:,1]=np.cos(np.deg2rad(senz))
         aainput[:,2]=np.cos(np.deg2rad(relaz))
@@ -208,7 +210,7 @@ class MLNN(object):
         #rebuild aodNN and compute data
         ncase=len(solz)
         nlayers=len(self.aodnn_layers)
-        aodinput=np.zeros((ncase,int(self.aodnn_layers[0])))
+        aodinput=np.zeros((ncase,int(self.aodnn_layers[0])), dtype=datatype)
         aodinput[:,0]=np.cos(np.deg2rad(solz))
         aodinput[:,1]=np.cos(np.deg2rad(senz))
         aodinput[:,2]=np.cos(np.deg2rad(relaz))
@@ -237,7 +239,7 @@ class MLNN(object):
         #rebuild rrsNN and compute data
         ncase=len(solz)
         nlayers=len(self.rrsnn_layers)
-        rrsinput=np.zeros((ncase,int(self.rrsnn_layers[0])))
+        rrsinput=np.zeros((ncase,int(self.rrsnn_layers[0])), dtype=datatype)
         rrsinput[:,0]=np.cos(np.deg2rad(solz))
         rrsinput[:,1]=np.cos(np.deg2rad(senz))
         rrsinput[:,2]=np.cos(np.deg2rad(relaz))
@@ -262,8 +264,8 @@ class MLNN(object):
         rrs=np.power(10, rrsnn_output)
         
         if self.sensor == 'OLCI' and CHLfluorescence:
-            rrsT = np.zeros((ncase,4))
-            rrsN = np.zeros((ncase,2))
+            rrsT = np.zeros((ncase,4), dtype=datatype)
+            rrsN = np.zeros((ncase,2), dtype=datatype)
             peak1 = (lrc[:,9]-lrc[:,7])/lrc[:,7]*100
 
             Lrc_a = self.compute_LrcaNN(solz, senz, relaz, lrc)
@@ -307,7 +309,7 @@ class MLNN(object):
         #rebuild LrcaNN and compute data
         ncase=len(solz)
         nlayers=len(self.LrcaNN_layers)
-        lrcainput=np.zeros((ncase,int(self.LrcaNN_layers[0])))
+        lrcainput=np.zeros((ncase,int(self.LrcaNN_layers[0])), dtype=datatype)
         lrcainput[:,0]=np.cos(np.deg2rad(solz))
         lrcainput[:,1]=np.cos(np.deg2rad(senz))
         lrcainput[:,2]=np.cos(np.deg2rad(relaz))
@@ -339,7 +341,7 @@ class MLNN(object):
         #rebuild iopNN and compute data
         ncase=len(rrs)
         nlayers=len(self.iopnn_layers)
-        iopinput=np.zeros((ncase,int(self.iopnn_layers[0])))
+        iopinput=np.zeros((ncase,int(self.iopnn_layers[0])), dtype=datatype)
         iopinput[:,:]=np.log10(rrs)
         #normalize
         for i in range(int(self.iopnn_layers[0])):
@@ -365,7 +367,7 @@ class MLNN(object):
         #rebuild ocNN and compute data
         ncase=len(rrs)
         nlayers=len(self.ocnn_layers)
-        ocinput=np.zeros((ncase,int(self.ocnn_layers[0])))
+        ocinput=np.zeros((ncase,int(self.ocnn_layers[0])), dtype=datatype)
         ocinput[:,:]=np.log10(rrs)
         #normalize
         for i in range(int(self.ocnn_layers[0])):
@@ -391,7 +393,7 @@ class MLNN(object):
         #rebuild aphNN and compute data
         ncase=len(rrs)
         nlayers=len(self.aphnn_layers)
-        aphinput=np.zeros((ncase,int(self.aphnn_layers[0])))
+        aphinput=np.zeros((ncase,int(self.aphnn_layers[0])), dtype=datatype)
         aphinput[:,:]=np.log10(rrs)
         #normalize
         for i in range(int(self.aphnn_layers[0])):
@@ -417,7 +419,7 @@ class MLNN(object):
         #rebuild adgNN and compute data
         ncase=len(rrs)
         nlayers=len(self.adgnn_layers)
-        adginput=np.zeros((ncase,int(self.adgnn_layers[0])))
+        adginput=np.zeros((ncase,int(self.adgnn_layers[0])), dtype=datatype)
         adginput[:,:]=np.log10(rrs)
         #normalize
         for i in range(int(self.adgnn_layers[0])):
@@ -443,7 +445,7 @@ class MLNN(object):
         #rebuild bbpNN and compute data
         ncase=len(rrs)
         nlayers=len(self.bbpnn_layers)
-        bbpinput=np.zeros((ncase,int(self.bbpnn_layers[0])))
+        bbpinput=np.zeros((ncase,int(self.bbpnn_layers[0])), dtype=datatype)
         bbpinput[:,:]=np.log10(rrs)
         #normalize
         for i in range(int(self.bbpnn_layers[0])):
@@ -469,7 +471,7 @@ class MLNN(object):
         #rebuild rrsNN and compute data
         ncase=len(rrs)
         nlayers=len(self.apnn_layers)
-        apinput=np.zeros((ncase,int(self.apnn_layers[0])))
+        apinput=np.zeros((ncase,int(self.apnn_layers[0])), dtype=datatype)
         apinput[:,:]=np.log10(rrs)
         #normalize
         for i in range(int(self.apnn_layers[0])):
@@ -495,7 +497,7 @@ class MLNN(object):
         #rebuild rrsNN and compute data
         ncase=len(rrs)
         nlayers=len(self.bpnn_layers)
-        bpinput=np.zeros((ncase,int(self.bpnn_layers[0])))
+        bpinput=np.zeros((ncase,int(self.bpnn_layers[0])), dtype=datatype)
         bpinput[:,:]=np.log10(rrs)
         #normalize
         for i in range(int(self.bpnn_layers[0])):
