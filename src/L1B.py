@@ -28,6 +28,7 @@ from datetime import datetime, timedelta
 import re
 import sys
 from pathlib import Path
+from src.shared_constants import datatype
 
 class L1B(object):
     
@@ -1420,19 +1421,19 @@ class L1B(object):
             
             self.solz = np.flip(np.array(f['/geolocation_data/solar_zenith'][oci_sline:oci_eline,self.spixl:self.epixl]),0)
             scale = np.array(f['/geolocation_data/solar_zenith'].attrs['scale_factor'])
-            self.solz = self.solz * scale
+            self.solz = (self.solz * scale).astype(datatype)  # If we want float32 to save memory, need to specifically force it to be that type here
 
             self.senz = np.flip(np.array(f['/geolocation_data/sensor_zenith'][oci_sline:oci_eline,self.spixl:self.epixl]),0)
             scale = np.array(f['/geolocation_data/sensor_zenith'].attrs['scale_factor'])
-            self.senz = self.senz * scale
+            self.senz = (self.senz * scale).astype(datatype)  # If we want float32 to save memory, need to specifically force it to be that type here
 
             sola = np.flip(np.array(f['/geolocation_data/solar_azimuth'][oci_sline:oci_eline,self.spixl:self.epixl]),0)
             scale = np.array(f['/geolocation_data/solar_azimuth'].attrs['scale_factor'])
-            sola = sola * scale
+            sola = (sola * scale).astype(datatype)  # If we want float32 to save memory, need to specifically force it to be that type here
 
             sena = np.flip(np.array(f['/geolocation_data/sensor_azimuth'][oci_sline:oci_eline,self.spixl:self.epixl]),0)
             scale = np.array(f['/geolocation_data/sensor_azimuth'].attrs['scale_factor'])
-            sena = sena * scale
+            sena = (sena * scale).astype(datatype)
 
             self.relaz =sena - 180. -sola
             self.relaz[self.relaz>180.] = 360.-self.relaz[self.relaz>180.]
@@ -1442,7 +1443,7 @@ class L1B(object):
             dt = time.strptime(timestamp,'%Y%m%dT%H%M%S')
             # es_factor = es_dist(dt.tm_year, dt.tm_yday, dt.tm_hour*3600+dt.tm_min*60+dt.tm_sec)
 
-            self.reflectance=np.zeros([self.dim[0],self.dim[1],nband])
+            self.reflectance=np.zeros([self.dim[0], self.dim[1], nband], dtype=datatype)
 
             rhot_blue = np.array(f['/observation_data/rhot_blue'][:,oci_sline:oci_eline,self.spixl:self.epixl])
             rhot_blue = np.rollaxis(rhot_blue,0,3)
@@ -1546,7 +1547,7 @@ class L1B(object):
                 self.relaz[self.relaz > 180.] = 360. - self.relaz[self.relaz > 180.]
                 self.relaz[self.relaz < -180.] = 360. + self.relaz[self.relaz < -180.]
 
-                self.reflectance = np.zeros([self.dim[0], self.dim[1], nband])
+                self.reflectance = np.zeros([self.dim[0], self.dim[1], nband], dtype=datatype)
                 rhot_labels = np.array(f['/products'])
                 rhot_labels_above_420nm = []
                 for label in rhot_labels:
