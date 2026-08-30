@@ -11,6 +11,7 @@ from netCDF4 import Dataset
 from scipy import interpolate
 import sys
 from pathlib import Path
+from src.shared_constants import datatype
 
 class Rayleigh(object):
     
@@ -62,8 +63,8 @@ class Rayleigh(object):
         nmod = 3
         sigma = 0.0731*np.power(l1b_ws, 0.5)
         sigma[sigma > 0.4] = 0.4
-        ray_i = np.zeros(npix)
-        l1b_ray = np.zeros([npix, nband])
+        ray_i = np.zeros(npix, dtype=datatype)
+        l1b_ray = np.zeros([npix, nband], dtype=datatype)
         tmp = np.zeros([nsigma, nsolz, nsenz])
         for i in range(nband):
             ray_i[:] = 0.0
@@ -86,10 +87,10 @@ class Rayleigh(object):
         x1 = 0.8192 - 1.2541*self.taur
         x2 = 0.6542 - 1.608*self.taur
         x = np.matmul(np.expand_dims(airmass, 1), [self.taur]) * (np.matmul(np.expand_dims(logam, 1), [x1]) - x2)
-        x3 = np.zeros([npix,nband])
+        x3 = np.zeros([npix,nband], dtype=datatype)
         for i in range(nband):
             x3[:,i] = l1b_pressure/p0
         ray_fac = (1.0 - np.exp(-x * x3))/(1.0 - np.exp(-x))
-        return ray_fac
+        return ray_fac.astype(datatype, copy=False)
             
                 
