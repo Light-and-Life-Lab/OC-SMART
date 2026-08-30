@@ -502,7 +502,7 @@ class ANCILLARY(object):
 
         # Interpolate ozone map to the L1B grid
         func = interpolate.RegularGridInterpolator((np.flip(self.oz_lat), self.oz_lon), np.flip(self.ozmap, 0))
-        ozone_concentration = func(np.array([l1b_lat, l1b_lon]).transpose())
+        ozone_concentration = func(np.array([l1b_lat, l1b_lon]).transpose()).astype(np.float32)
         self.ozone_concentration = ozone_concentration
 
         ancillary_data = gas_corrections.Ancillary_Data()
@@ -680,15 +680,15 @@ class ANCILLARY(object):
         
         # Interpolate no2 map to the L1B grid
         func = interpolate.RegularGridInterpolator((np.flip(self.no2_frac_lat), self.no2_frac_lon), np.flip(self.no2_frac, 0))
-        fraction_tropospheric_no2_above_200m = func(np.array([l1b_lat, l1b_lon]).transpose())
+        fraction_tropospheric_no2_above_200m = func(np.array([l1b_lat, l1b_lon]).transpose()).astype(np.float32)
 
         no2_strat = self.no2_strat[int(month)-1, :, :]
         func = interpolate.RegularGridInterpolator((np.flip(self.no2_lat), self.no2_lon), np.flip(no2_strat, 0))
-        stratospheric_no2_concentration = func(np.array([l1b_lat, l1b_lon]).transpose())
+        stratospheric_no2_concentration = func(np.array([l1b_lat, l1b_lon]).transpose()).astype(np.float32)
 
         no2_tropo = self.no2_tropo[int(month)-1, :, :]
         func = interpolate.RegularGridInterpolator((np.flip(self.no2_lat), self.no2_lon), np.flip(no2_tropo, 0))
-        tropospheric_no2_concentration = func(np.array([l1b_lat, l1b_lon]).transpose())
+        tropospheric_no2_concentration = func(np.array([l1b_lat, l1b_lon]).transpose()).astype(np.float32)
 
         ancillary_data = gas_corrections.Ancillary_Data()
         ancillary_data.no2_absorption_cross_section = no2_absorption_cross_section
