@@ -26,10 +26,8 @@ from src.cloudmask import Cloudmask
 #from glint import get_glint_coeff
 from src.mlnn import MLNN
 from src.ocparam import CHL, TSM, CDOM
-from src.shared_constants import datatype
+from src.config import Config
 
-gzip_compression_opt = 4
-gzip_shuffle_opt = True
 DEBUG_ANCILLARY_ARRAYS = False  # Set to True if ancillary arrays (e.g. ozone concentration, no2_concentration, etc.) need to be populated (e.g. for easy viewing in the debugger)
 
 def print_L2_write_warning():
@@ -86,6 +84,23 @@ if 'l2_prod' in input_param.keys():
 else:
     print('List of level-2 products not provided, using default list: rrs, chl')
     l2_prod = ['rrs','chl']
+#######  Floating Point Precision Options  ##########################
+if 'floating_point_datatype' in input_param.keys():
+    default_floating_point_type = 'float32'
+    datatype = input_param.get('floating_point_datatype', default_floating_point_type)
+    if datatype.lower() not in ['float32', 'float64']:
+        print(f"Warning: Supported floating point datatypes are float32 and float64. The floating_point_datatype value in OCSMART_Input.txt was {datatype}, setting to default type {default_floating_point_type}.")
+        datatype = default_floating_point_type
+    Config.datatype = datatype
+#######  L2 file write settings  ##########################
+if 'gzip_compression_opt' in input_param.keys():
+    gzip_compression_opt = int(input_param.get('gzip_compression_opt', 4))
+    if gzip_compression_opt < 1 or gzip_compression_opt > 9:
+        print("The gzip_compression_opt option must be an integer between 1 and 9.")
+    # gzip_compression_opt = 4
+if 'gzip_shuffle_opt' in input_param.keys():
+    gzip_shuffle_opt = (input_param.get('gzip_shuffle_opt', True).lower() == "true")
+    # gzip_shuffle_opt = True
 
 water_subpixl_limit = 0.95 # for land/water mask
 #glint_max = 0.05 (not needed)
@@ -275,7 +290,7 @@ for ifile in np.arange(nfiles):
                 
                 # compute land/water mask
                 if sinfo.sensor in ['EPIC', 'VIIRS', 'MODIS-Aqua', 'MODIS-Terra', 'SeaWiFS','MERSI2', 'OCI']:
-                    water_portion = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
+                    water_portion = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=Config.datatype)
                     water_portion[mask_valid_geo]=aux.maskland(l1b.latitude[mask_valid_geo], l1b.longitude[mask_valid_geo], l1b_dxdy)
                     mask_water = water_portion > water_subpixl_limit
                     mask_nwater = water_portion <= water_subpixl_limit
@@ -297,8 +312,12 @@ for ifile in np.arange(nfiles):
 
                 training_bands = sinfo.training_bands
 
-                tg_sol = np.ones(l1b_dim,dtype=datatype)
-                tg_sen = np.ones(l1b_dim,dtype=datatype)
+                tg_sol = np.ones(l1b_dim,dtype=Config.datatype)
+                tg_sen = np.ones(l1b_dim,dtype=Config.datatype)
+
+                # write L2 file in H5 format
+                print('Open level-2 file {} ... '.format(os.path.splitext(fname)[0] + '_L2_OCSMART.h5 for writing'))
+                print('Values will be written to the L2 file as they are computed and then removed from RAM to reduce peak memory usage.')
 
                 with h5py.File(L2_path + os.path.splitext(fname)[0] + '_L2_OCSMART.h5', 'w') as hf:
                     # compute transmittance of gases
@@ -319,30 +338,30 @@ for ifile in np.arange(nfiles):
                         #                                                                    l1b.senz[mask_valid_geo_water])
 
                         if DEBUG_ANCILLARY_ARRAYS:
-                            ozone_concentration = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
+                            ozone_concentration = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=Config.datatype)
                             ozone_concentration[mask_valid_geo_water] = anc.ozone_concentration
 
                         if 'tg_sol_oz' in l2_prod:
-                            solar_zenith_oz = np.ones(l1b_dim,dtype=datatype)
-                            # solar_zenith_oz_py = np.ones(l1b_dim,dtype=datatype)
+                            solar_zenith_oz = np.ones(l1b_dim,dtype=Config.datatype)
+                            # solar_zenith_oz_py = np.ones(l1b_dim,dtype=Config.datatype)
 
                             solar_zenith_oz[mask_valid_geo_water, :] = solar_zenith_oz_masked
 
                             gw = hf.create_group('tg_sol_oz')
                             for i in np.arange(mlnn.aodnn_layers[-1]):
-                                gw.create_dataset('tg_sol_oz_' + str(training_bands[i]) + 'nm', dtype=datatype, data = solar_zenith_oz[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                                gw.create_dataset('tg_sol_oz_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data = solar_zenith_oz[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
 
                             del solar_zenith_oz
 
                         if 'tg_sen_oz' in l2_prod:
-                            sensor_zenith_oz = np.ones(l1b_dim,dtype=datatype)
-                            # sensor_zenith_oz_py = np.ones(l1b_dim,dtype=datatype)
+                            sensor_zenith_oz = np.ones(l1b_dim,dtype=Config.datatype)
+                            # sensor_zenith_oz_py = np.ones(l1b_dim,dtype=Config.datatype)
 
                             sensor_zenith_oz[mask_valid_geo_water, :] = sensor_zenith_oz_masked
                             
                             gw = hf.create_group('tg_sen_oz')
                             for i in np.arange(mlnn.aodnn_layers[-1]):
-                                gw.create_dataset('tg_sen_oz_' + str(training_bands[i]) + 'nm', dtype=datatype, data = sensor_zenith_oz[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                                gw.create_dataset('tg_sen_oz_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data = sensor_zenith_oz[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
 
                             del sensor_zenith_oz
 
@@ -374,31 +393,31 @@ for ifile in np.arange(nfiles):
                         tg_sen[mask_valid_geo_water, :] *= sensor_zenith_no2_masked
 
                         if DEBUG_ANCILLARY_ARRAYS:
-                            fraction_tropospheric_no2_above_200m = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
-                            stratospheric_no2_concentration = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
-                            tropospheric_no2_concentration = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
+                            fraction_tropospheric_no2_above_200m = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=Config.datatype)
+                            stratospheric_no2_concentration = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=Config.datatype)
+                            tropospheric_no2_concentration = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=Config.datatype)
 
                             fraction_tropospheric_no2_above_200m[mask_valid_geo_water] = anc.fraction_tropospheric_no2_above_200m
                             stratospheric_no2_concentration[mask_valid_geo_water] = anc.stratospheric_no2_concentration
                             tropospheric_no2_concentration[mask_valid_geo_water] = anc.tropospheric_no2_concentration
 
                         if 'tg_sol_no2' in l2_prod:
-                            solar_zenith_no2 = np.ones(l1b_dim,dtype=datatype)
-                            # solar_zenith_no2_py = np.ones(l1b_dim,dtype=datatype)
+                            solar_zenith_no2 = np.ones(l1b_dim,dtype=Config.datatype)
+                            # solar_zenith_no2_py = np.ones(l1b_dim,dtype=Config.datatype)
 
                             gw = hf.create_group('tg_sol_no2')
                             for i in np.arange(mlnn.aodnn_layers[-1]):
-                                gw.create_dataset('tg_sol_no2_' + str(training_bands[i]) + 'nm', dtype=datatype, data = solar_zenith_no2[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                                gw.create_dataset('tg_sol_no2_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data = solar_zenith_no2[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
 
                             del solar_zenith_no2
 
                         if 'tg_sen_no2' in l2_prod:
-                            sensor_zenith_no2 = np.ones(l1b_dim,dtype=datatype)
-                            # sensor_zenith_no2_py = np.ones(l1b_dim,dtype=datatype)
+                            sensor_zenith_no2 = np.ones(l1b_dim,dtype=Config.datatype)
+                            # sensor_zenith_no2_py = np.ones(l1b_dim,dtype=Config.datatype)
 
                             gw = hf.create_group('tg_sen_no2')
                             for i in np.arange(mlnn.aodnn_layers[-1]):
-                                gw.create_dataset('tg_sen_no2_' + str(training_bands[i]) + 'nm', dtype=datatype, data = sensor_zenith_no2[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                                gw.create_dataset('tg_sen_no2_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data = sensor_zenith_no2[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
 
                             del sensor_zenith_no2
 
@@ -413,20 +432,20 @@ for ifile in np.arange(nfiles):
                         tg_sen[mask_valid_geo_water, :] *= sensor_zenith_co2_masked
 
                         if 'tg_sol_co2' in l2_prod:
-                            solar_zenith_co2 = np.ones(l1b_dim, dtype=datatype)
+                            solar_zenith_co2 = np.ones(l1b_dim, dtype=Config.datatype)
 
                             gw = hf.create_group('tg_sol_co2')
                             for i in np.arange(mlnn.aodnn_layers[-1]):
-                                gw.create_dataset('tg_sol_co2_'+str(training_bands[i])+'nm',dtype=datatype,data = solar_zenith_co2[:,:,i],compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                                gw.create_dataset('tg_sol_co2_'+str(training_bands[i])+'nm',dtype=Config.datatype,data = solar_zenith_co2[:,:,i],compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
 
                             del solar_zenith_co2
 
                         if 'tg_sen_co2' in l2_prod:
-                            sensor_zenith_co2 = np.ones(l1b_dim, dtype=datatype)
+                            sensor_zenith_co2 = np.ones(l1b_dim, dtype=Config.datatype)
 
                             gw = hf.create_group('tg_sen_co2')
                             for i in np.arange(mlnn.aodnn_layers[-1]):
-                                gw.create_dataset('tg_sen_co2_'+str(training_bands[i])+'nm',dtype=datatype,data = sensor_zenith_co2[:,:,i],compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                                gw.create_dataset('tg_sen_co2_'+str(training_bands[i])+'nm',dtype=Config.datatype,data = sensor_zenith_co2[:,:,i],compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
 
                             del sensor_zenith_co2
 
@@ -440,20 +459,20 @@ for ifile in np.arange(nfiles):
                         tg_sen[mask_valid_geo_water, :] *= sensor_zenith_co_masked
 
                         if 'tg_sol_co' in l2_prod:
-                            solar_zenith_co = np.ones(l1b_dim, dtype=datatype)
+                            solar_zenith_co = np.ones(l1b_dim, dtype=Config.datatype)
 
                             gw = hf.create_group('tg_sol_co')
                             for i in np.arange(mlnn.aodnn_layers[-1]):
-                                gw.create_dataset('tg_sol_co_' + str(training_bands[i]) + 'nm', dtype=datatype, data = solar_zenith_co[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                                gw.create_dataset('tg_sol_co_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data = solar_zenith_co[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
 
                             del solar_zenith_co
 
                         if 'tg_sen_co' in l2_prod:
-                            sensor_zenith_co = np.ones(l1b_dim, dtype=datatype)
+                            sensor_zenith_co = np.ones(l1b_dim, dtype=Config.datatype)
 
                             gw = hf.create_group('tg_sen_co')
                             for i in np.arange(mlnn.aodnn_layers[-1]):
-                                gw.create_dataset('tg_sen_co_' + str(training_bands[i]) + 'nm', dtype=datatype, data = sensor_zenith_co[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                                gw.create_dataset('tg_sen_co_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data = sensor_zenith_co[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
 
                             del sensor_zenith_co
 
@@ -467,20 +486,20 @@ for ifile in np.arange(nfiles):
                         tg_sen[mask_valid_geo_water, :] *= sensor_zenith_ch4_masked
 
                         if 'tg_sol_ch4' in l2_prod:
-                            solar_zenith_ch4 = np.ones(l1b_dim, dtype=datatype)
+                            solar_zenith_ch4 = np.ones(l1b_dim, dtype=Config.datatype)
 
                             gw = hf.create_group('tg_sol_ch4')
                             for i in np.arange(mlnn.aodnn_layers[-1]):
-                                gw.create_dataset('tg_sol_ch4_' + str(training_bands[i]) + 'nm',dtype=datatype, data = solar_zenith_ch4[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                                gw.create_dataset('tg_sol_ch4_' + str(training_bands[i]) + 'nm',dtype=Config.datatype, data = solar_zenith_ch4[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
 
                             del solar_zenith_ch4
 
                         if 'tg_sen_ch4' in l2_prod:
-                            sensor_zenith_ch4 = np.ones(l1b_dim, dtype=datatype)
+                            sensor_zenith_ch4 = np.ones(l1b_dim, dtype=Config.datatype)
                             
                             gw = hf.create_group('tg_sen_ch4')
                             for i in np.arange(mlnn.aodnn_layers[-1]):
-                                gw.create_dataset('tg_sen_ch4_' + str(training_bands[i]) + 'nm',dtype=datatype, data = sensor_zenith_ch4[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                                gw.create_dataset('tg_sen_ch4_' + str(training_bands[i]) + 'nm',dtype=Config.datatype, data = sensor_zenith_ch4[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
 
                             del sensor_zenith_ch4
 
@@ -494,20 +513,20 @@ for ifile in np.arange(nfiles):
                         tg_sen[mask_valid_geo_water, :] *= sensor_zenith_o2_masked
 
                         if 'tg_sol_o2' in l2_prod:
-                            solar_zenith_o2 = np.ones(l1b_dim, dtype=datatype)
+                            solar_zenith_o2 = np.ones(l1b_dim, dtype=Config.datatype)
 
                             gw = hf.create_group('tg_sol_o2')
                             for i in np.arange(mlnn.aodnn_layers[-1]):
-                                gw.create_dataset('tg_sol_o2_' + str(training_bands[i]) + 'nm', dtype=datatype, data = solar_zenith_o2[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                                gw.create_dataset('tg_sol_o2_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data = solar_zenith_o2[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
 
                             del solar_zenith_o2
 
                         if 'tg_sen_o2' in l2_prod:
-                            sensor_zenith_o2 = np.ones(l1b_dim, dtype=datatype)
+                            sensor_zenith_o2 = np.ones(l1b_dim, dtype=Config.datatype)
 
                             gw = hf.create_group('tg_sen_o2')
                             for i in np.arange(mlnn.aodnn_layers[-1]):
-                                gw.create_dataset('tg_sen_o2_' + str(training_bands[i]) + 'nm', dtype=datatype, data = sensor_zenith_o2[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                                gw.create_dataset('tg_sen_o2_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data = sensor_zenith_o2[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
 
                             del sensor_zenith_o2
 
@@ -521,20 +540,20 @@ for ifile in np.arange(nfiles):
                         tg_sen[mask_valid_geo_water, :] *= sensor_zenith_n2o_masked
 
                         if 'tg_sol_n2o' in l2_prod:
-                            solar_zenith_n2o = np.ones(l1b_dim, dtype=datatype)
+                            solar_zenith_n2o = np.ones(l1b_dim, dtype=Config.datatype)
 
                             gw = hf.create_group('tg_sol_n2o')
                             for i in np.arange(mlnn.aodnn_layers[-1]):
-                                gw.create_dataset('tg_sol_n2o_' + str(training_bands[i]) + 'nm', dtype=datatype, data = solar_zenith_n2o[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                                gw.create_dataset('tg_sol_n2o_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data = solar_zenith_n2o[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
 
                             del solar_zenith_n2o
 
                         if 'tg_sen_n2o' in l2_prod:
-                            sensor_zenith_n2o = np.ones(l1b_dim, dtype=datatype)
+                            sensor_zenith_n2o = np.ones(l1b_dim, dtype=Config.datatype)
 
                             gw = hf.create_group('tg_sen_n2o')
                             for i in np.arange(mlnn.aodnn_layers[-1]):
-                                gw.create_dataset('tg_sen_n2o_' + str(training_bands[i]) + 'nm', dtype=datatype, data = sensor_zenith_n2o[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                                gw.create_dataset('tg_sen_n2o_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data = sensor_zenith_n2o[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
 
                             del sensor_zenith_n2o
 
@@ -548,39 +567,39 @@ for ifile in np.arange(nfiles):
                         tg_sen[mask_valid_geo_water, :] *= sensor_zenith_h2o_masked
 
                         if 'tg_sol_h2o' in l2_prod:
-                            solar_zenith_h2o = np.ones(l1b_dim, dtype=datatype)
+                            solar_zenith_h2o = np.ones(l1b_dim, dtype=Config.datatype)
 
                             gw = hf.create_group('tg_sol_h2o')
                             for i in np.arange(mlnn.aodnn_layers[-1]):
-                                gw.create_dataset('tg_sol_h2o_' + str(training_bands[i]) + 'nm', dtype=datatype, data = solar_zenith_h2o[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                                gw.create_dataset('tg_sol_h2o_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data = solar_zenith_h2o[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
 
                             del solar_zenith_h2o
 
                         if 'tg_sen_h2o' in l2_prod:
-                            sensor_zenith_h2o = np.ones(l1b_dim, dtype=datatype)
+                            sensor_zenith_h2o = np.ones(l1b_dim, dtype=Config.datatype)
 
                             gw = hf.create_group('tg_sen_h2o')
                             for i in np.arange(mlnn.aodnn_layers[-1]):
-                                gw.create_dataset('tg_sen_h2o_' + str(training_bands[i]) + 'nm', dtype=datatype, data = sensor_zenith_h2o[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                                gw.create_dataset('tg_sen_h2o_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data = sensor_zenith_h2o[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
 
                             del sensor_zenith_h2o
 
                         del solar_zenith_h2o_masked, sensor_zenith_h2o_masked
 
                     # get met data: pressure, RH, windspeed
-                    l1b_pressure = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
-                    l1b_rh = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
-                    l1b_ws = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
+                    l1b_pressure = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=Config.datatype)
+                    l1b_rh = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=Config.datatype)
+                    l1b_ws = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=Config.datatype)
                     l1b_pressure[mask_valid_geo_water], l1b_rh[mask_valid_geo_water], l1b_ws[mask_valid_geo_water] = anc.get_metdata(l1b.latitude[mask_valid_geo_water],l1b.longitude[mask_valid_geo_water])
 
                     # get Rayleigh reflectance and correct for real time pressure
-                    l1b_ray = np.full(l1b_dim, np.nan, dtype=datatype)
+                    l1b_ray = np.full(l1b_dim, np.nan, dtype=Config.datatype)
                     l1b_ray[mask_valid_geo_water,:] = ray.corr_ray(l1b.solz[mask_valid_geo_water],\
                                                             l1b.senz[mask_valid_geo_water],\
                                                             l1b.relaz[mask_valid_geo_water],\
                                                             l1b_ws[mask_valid_geo_water])
 
-                    # press_fac = np.full(l1b_dim, np.nan, dtype=datatype)  # press_fac is only used as in intermediate variable no need to pre-allocate it (which costs unnecessary memory for large images)
+                    # press_fac = np.full(l1b_dim, np.nan, dtype=Config.datatype)  # press_fac is only used as in intermediate variable no need to pre-allocate it (which costs unnecessary memory for large images)
                     
                     press_fac_masked = ray.corr_ray_press(l1b.solz[mask_valid_geo_water],\
                                                                     l1b.senz[mask_valid_geo_water],\
@@ -591,20 +610,20 @@ for ifile in np.arange(nfiles):
                     
                     # Oxygen absorption correction for SeaWiFS band 7
                     if sinfo.sensor == 'SeaWiFS':
-                        tg_o2 = np.ones([l1b_dim[0],l1b_dim[1]], dtype=datatype)
+                        tg_o2 = np.ones([l1b_dim[0],l1b_dim[1]], dtype=Config.datatype)
                         tg_o2[mask_valid_geo_water] = anc.trans_o2_ray(l1b.solz[mask_valid_geo_water], l1b.senz[mask_valid_geo_water])
                         l1b_ray[mask_valid_geo_water,6] = l1b_ray[mask_valid_geo_water,6] * tg_o2[mask_valid_geo_water]
 
 
                     # get whitecaps reflectance
-                    l1b_wcaps = np.full(l1b_dim, np.nan, dtype=datatype)
+                    l1b_wcaps = np.full(l1b_dim, np.nan, dtype=Config.datatype)
                     l1b_wcaps[mask_valid_geo_water,:] = anc.whitecaps(sinfo.band,l1b.solz[mask_valid_geo_water],\
                                                                 l1b.senz[mask_valid_geo_water], \
                                                                 l1b_ws[mask_valid_geo_water], \
                                                                 l1b_pressure[mask_valid_geo_water], ray.taur)
                     
                     # compute Rayleigh corrected reflectance and mask negative value, if any
-                    lrc = np.full(l1b_dim, -999., dtype=datatype)
+                    lrc = np.full(l1b_dim, -999., dtype=Config.datatype)
 
                     # lrc[mask_valid_geo_water,:] = l1b.reflectance[mask_valid_geo_water,:]/solar_zenith_oz[mask_valid_geo_water,:]/sensor_zenith_oz[mask_valid_geo_water,:]\
                     #                            /solar_zenith_no2[mask_valid_geo_water,:]/sensor_zenith_no2[mask_valid_geo_water,:]-l1b_wcaps[mask_valid_geo_water,:]-l1b_ray[mask_valid_geo_water,:]
@@ -622,31 +641,31 @@ for ifile in np.arange(nfiles):
                     if 'tg_sol' in l2_prod:
                         gw = hf.create_group('tg_sol')
                         for i in np.arange(mlnn.aodnn_layers[-1]):
-                            gw.create_dataset('tg_sol_' + str(training_bands[i]) + 'nm', dtype=datatype, data = tg_sol[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                            gw.create_dataset('tg_sol_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data = tg_sol[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
                     del tg_sol
 
                     if 'tg_sen' in l2_prod:
                         gw = hf.create_group('tg_sen')
                         for i in np.arange(mlnn.aodnn_layers[-1]):
-                            gw.create_dataset('tg_sen_' + str(training_bands[i]) + 'nm', dtype=datatype, data = tg_sen[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                            gw.create_dataset('tg_sen_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data = tg_sen[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
                     del tg_sen
 
                     if 'Lr' in l2_prod:
                         gw = hf.create_group('Lr')
                         for i in np.arange(mlnn.aodnn_layers[-1]):
-                            gw.create_dataset('Lr_' + str(training_bands[i]) + 'nm', dtype=datatype, data = l1b_ray[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                            gw.create_dataset('Lr_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data = l1b_ray[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
                     del l1b_ray
 
                     if 'Lwp' in l2_prod:
                         gw = hf.create_group('Lwp')
                         for i in np.arange(mlnn.aodnn_layers[-1]):
-                            gw.create_dataset('Lwp_' + str(training_bands[i]) + 'nm', dtype=datatype, data = l1b_wcaps[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                            gw.create_dataset('Lwp_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data = l1b_wcaps[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
                     del l1b_wcaps
 
                     if 'Lt' in l2_prod:
                         gw = hf.create_group('Lt')
                         for i in np.arange(mlnn.aodnn_layers[-1]):
-                            gw.create_dataset('Lt_' + str(training_bands[i]) + 'nm', dtype=datatype, data = l1b.reflectance[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                            gw.create_dataset('Lt_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data = l1b.reflectance[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
                     del l1b.reflectance
 
                     neg = np.sum(lrc < 0.0, axis=2)
@@ -657,7 +676,7 @@ for ifile in np.arange(nfiles):
                     l2_mask[mask_valid_geo_water_lrcneg] = 1024
                     
                     # compute sunglint risk (not needed)
-                    # glint_coeff = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=datatype)
+                    # glint_coeff = np.zeros([l1b_dim[0], l1b_dim[1]], dtype=Config.datatype)
                 #    glint_coeff[mask_valid_geo_water] = get_glint_coeff(l1b.solz[mask_valid_geo_water], \
                 #                                                        l1b.senz[mask_valid_geo_water], \
                 #                                                        l1b.relaz[mask_valid_geo_water], \
@@ -690,19 +709,19 @@ for ifile in np.arange(nfiles):
                     wavelength_mask[training_band_ids] = True
 
                     # The conditional statements for the following are so that we can save memory if the user doesn't request that product in OCSMART_Input.txt
-                    aods = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.aodnn_layers[-1])], np.nan, dtype=datatype) if 'aod' in l2_prod else None
-                    aph = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.aphnn_layers[-1])], np.nan, dtype=datatype) if 'aph' in l2_prod else None
-                    adg = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.adgnn_layers[-1])], np.nan, dtype=datatype) if 'adg' in l2_prod else None
-                    bbp = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.bbpnn_layers[-1])], np.nan, dtype=datatype) if 'bbp' in l2_prod else None
-                    ap = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.apnn_layers[-1])], np.nan, dtype=datatype) if 'at' in l2_prod else None
-                    bp = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.bpnn_layers[-1])], np.nan, dtype=datatype) if 'bt' in l2_prod else None
+                    aods = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.aodnn_layers[-1])], np.nan, dtype=Config.datatype) if 'aod' in l2_prod else None
+                    aph = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.aphnn_layers[-1])], np.nan, dtype=Config.datatype) if 'aph' in l2_prod else None
+                    adg = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.adgnn_layers[-1])], np.nan, dtype=Config.datatype) if 'adg' in l2_prod else None
+                    bbp = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.bbpnn_layers[-1])], np.nan, dtype=Config.datatype) if 'bbp' in l2_prod else None
+                    ap = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.apnn_layers[-1])], np.nan, dtype=Config.datatype) if 'at' in l2_prod else None
+                    bp = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.bpnn_layers[-1])], np.nan, dtype=Config.datatype) if 'bt' in l2_prod else None
 
                     # run Multilayer Neural Network (MLNN) retrieval on Lrc data
                     #if image is too large, separate into blocks to process
 
                     oos_flag = np.zeros([l1b_dim[0], l1b_dim[1]], dtype='bool')
-                    rrs = np.full([l1b_dim[0],l1b_dim[1], int(mlnn.rrsnn_layers[-1])], np.nan, dtype=datatype)
-                    # lrc_aann = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.aann_layers[-1])], np.nan, dtype=datatype)  # lrc_aann is an output of compute_aann, but is only actually used to compute the other output, oos_flag. No need to allocate lrc_aann and we can save memory
+                    rrs = np.full([l1b_dim[0],l1b_dim[1], int(mlnn.rrsnn_layers[-1])], np.nan, dtype=Config.datatype)
+                    # lrc_aann = np.full([l1b_dim[0], l1b_dim[1], int(mlnn.aann_layers[-1])], np.nan, dtype=Config.datatype)  # lrc_aann is an output of compute_aann, but is only actually used to compute the other output, oos_flag. No need to allocate lrc_aann and we can save memory
 
                     if block_size < 0:
                         rows, cols = np.where(mask_valid_geo_water_lrcposi_nocloud)
@@ -797,74 +816,71 @@ for ifile in np.arange(nfiles):
                     mask_valid_geo_water_lrcposi_nocloud_oos = mask_valid_geo_water_lrcposi_nocloud & oos_flag
                     l2_mask[mask_valid_geo_water_lrcposi_nocloud_oos] = 256
 
-                    # write L2 file in H5 format
-                    print('Writing level-2 file {} ... '.format(os.path.splitext(fname)[0] + '_L2_OCSMART.h5'))
-
                     # Variables are explicitly deleted after writing to the L2 file so that they don't persist while processing subsequent files and use up a bunch of memory
 
                     if 'Lrc' in l2_prod:
                         gw = hf.create_group('Lrc')
                         for i in np.arange(mlnn.aodnn_layers[-1]):
-                            gw.create_dataset('Lrc_' + str(training_bands[i]) + 'nm', dtype=datatype, data = lrc[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                            gw.create_dataset('Lrc_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data = lrc[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
                     del lrc
 
                     if 'aod' in l2_prod:
                         gw = hf.create_group('AOD')
                         for i in np.arange(mlnn.aodnn_layers[-1]):
-                            gw.create_dataset('AOD_' + str(training_bands[i]) + 'nm', dtype=datatype, data=aods[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                            gw.create_dataset('AOD_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data=aods[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
                     del aods
 
                     if 'aph' in l2_prod:
                         gw = hf.create_group('aph')    
                         for i in np.arange(mlnn.aphnn_layers[-1]):
-                            gw.create_dataset('aph_' + str(training_bands[i]) + 'nm', dtype=datatype, data=aph[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                            gw.create_dataset('aph_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data=aph[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
                     del aph
 
                     if 'adg' in l2_prod:
                         gw = hf.create_group('adg')    
                         for i in np.arange(mlnn.adgnn_layers[-1]):
-                            gw.create_dataset('adg_' + str(training_bands[i]) + 'nm', dtype=datatype, data=adg[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                            gw.create_dataset('adg_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data=adg[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
                     del adg
 
                     if 'bbp' in l2_prod:
                         gw = hf.create_group('bbp')    
                         for i in np.arange(mlnn.bbpnn_layers[-1]):
-                            gw.create_dataset('bbp_' + str(training_bands[i]) + 'nm', dtype=datatype, data=bbp[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                            gw.create_dataset('bbp_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data=bbp[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
                     del bbp
 
                     if 'at' in l2_prod:
                         gw = hf.create_group('at')    
                         for i in np.arange(mlnn.apnn_layers[-1]):
-                            gw.create_dataset('at_' + str(training_bands[i]) + 'nm', dtype=datatype, data=ap[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                            gw.create_dataset('at_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data=ap[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
                     del ap
 
                     if 'bt' in l2_prod:
                         gw = hf.create_group('bt')    
                         for i in np.arange(mlnn.bpnn_layers[-1]):
-                            gw.create_dataset('bt_' + str(training_bands[i]) + 'nm', dtype=datatype, data = bp[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                            gw.create_dataset('bt_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data = bp[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
                     del bp
                     
                     # retrieve CHL, CDOM and TSM
                     
-                    # chl_ocx = np.full([l1b_dim[0], l1b_dim[1]], np.nan, dtype=datatype)
+                    # chl_ocx = np.full([l1b_dim[0], l1b_dim[1]], np.nan, dtype=Config.datatype)
                     
 
                     # chl_ocx[mask_valid_geo_water_lrcposi_nocloud]=chl.get_chl_ocx(rrs[mask_valid_geo_water_lrcposi_nocloud,:])
                     if 'chl' in l2_prod:
-                        chl_oci = np.full([l1b_dim[0], l1b_dim[1]], np.nan, dtype=datatype)
+                        chl_oci = np.full([l1b_dim[0], l1b_dim[1]], np.nan, dtype=Config.datatype)
                         chl_oci[mask_valid_geo_water_lrcposi_nocloud] = chl.get_chl_oci(rrs[mask_valid_geo_water_lrcposi_nocloud, :])
-                        hf.create_dataset('chlor_a(oci)', dtype=datatype,data = chl_oci, compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                        hf.create_dataset('chlor_a(oci)', dtype=Config.datatype,data = chl_oci, compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
                         del chl_oci
 
-                        chl_yoc = np.full([l1b_dim[0], l1b_dim[1]], np.nan, dtype=datatype)
+                        chl_yoc = np.full([l1b_dim[0], l1b_dim[1]], np.nan, dtype=Config.datatype)
                         chl_yoc[mask_valid_geo_water_lrcposi_nocloud] = chl.get_chl_yoc(rrs[mask_valid_geo_water_lrcposi_nocloud, :])
-                        hf.create_dataset('chlor_a(yoc)', dtype=datatype,data = chl_yoc, compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                        hf.create_dataset('chlor_a(yoc)', dtype=Config.datatype,data = chl_yoc, compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
                         del chl_yoc
 
                     if 'tsm' in l2_prod:
-                        tsm_yoc = np.full([l1b_dim[0],l1b_dim[1]], np.nan, dtype=datatype)
+                        tsm_yoc = np.full([l1b_dim[0],l1b_dim[1]], np.nan, dtype=Config.datatype)
                         tsm_yoc[mask_valid_geo_water_lrcposi_nocloud] = tsm.get_tsm_yoc(rrs[mask_valid_geo_water_lrcposi_nocloud, :])
-                        hf.create_dataset('tsm(yoc)', dtype=datatype, data = tsm_yoc, compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                        hf.create_dataset('tsm(yoc)', dtype=Config.datatype, data = tsm_yoc, compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
                         del tsm_yoc
                     
                     hf.create_dataset('Latitude', dtype='float32', data = l1b.latitude, compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
@@ -881,23 +897,24 @@ for ifile in np.arange(nfiles):
                     del l2_mask
 
                     if 'pressure' in l2_prod:
-                        hf.create_dataset('pressure', dtype=datatype, data = l1b_pressure[:, :], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                        hf.create_dataset('pressure', dtype=Config.datatype, data = l1b_pressure[:, :], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
                     del l1b_pressure
 
                     if 'relative_humidity' in l2_prod:
-                        hf.create_dataset('relative_humidity', dtype=datatype, data = l1b_rh[:, :], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                        hf.create_dataset('relative_humidity', dtype=Config.datatype, data = l1b_rh[:, :], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
                     del l1b_rh
 
                     if 'wind_speed' in l2_prod:
-                        hf.create_dataset('wind_speed', dtype=datatype, data = l1b_ws[:, :], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                        hf.create_dataset('wind_speed', dtype=Config.datatype, data = l1b_ws[:, :], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
                     del l1b_ws 
 
                     if 'rrs' in l2_prod:
                         gw = hf.create_group('Rrs')    
                         for i in np.arange(mlnn.rrsnn_layers[-1]):
-                            gw.create_dataset('Rrs_' + str(training_bands[i]) + 'nm', dtype=datatype, data=rrs[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
+                            gw.create_dataset('Rrs_' + str(training_bands[i]) + 'nm', dtype=Config.datatype, data=rrs[:,:,i], compression="gzip", compression_opts=gzip_compression_opt, shuffle=gzip_shuffle_opt)
                     del rrs
 
+                    print('Finished writing level-2 file {} ... '.format(os.path.splitext(fname)[0] + '_L2_OCSMART.h5'))
                 
                 print('Processing finished in %.2f second.\n'%(time.time()-t_start))
             else:

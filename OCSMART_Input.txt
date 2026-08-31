@@ -4,3 +4,6 @@ l2_path = ./L2/
 l2_prod = Lt,Lr,Lrc,rrs,chl,tg_sol,tg_sen,Lwp
 solz_limit = 70.0
 senz_limit = 70.0
+gzip_compression_opt = 4
+gzip_shuffle_opt = True
+floating_point_datatype = float32
