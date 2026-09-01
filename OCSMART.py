@@ -27,6 +27,7 @@ from src.cloudmask import Cloudmask
 from src.mlnn import MLNN
 from src.ocparam import CHL, TSM, CDOM
 from src.config import Config
+import warnings
 
 DEBUG_ANCILLARY_ARRAYS = False  # Set to True if ancillary arrays (e.g. ozone concentration, no2_concentration, etc.) need to be populated (e.g. for easy viewing in the debugger)
 
@@ -92,6 +93,10 @@ if 'floating_point_datatype' in input_param.keys():
         print(f"Warning: Supported floating point datatypes are float32 and float64. The floating_point_datatype value in OCSMART_Input.txt was {datatype}, setting to default type {default_floating_point_type}.")
         datatype = default_floating_point_type
     Config.datatype = datatype
+
+    if datatype in ['float64']:
+        # If the user intentionally chose float64, don't clutter up the console output with unnecessary warnings.
+        warnings.filterwarnings("ignore", module="gas_corrections_lib")
 #######  L2 file write settings  ##########################
 if 'gzip_compression_opt' in input_param.keys():
     gzip_compression_opt = int(input_param.get('gzip_compression_opt', 4))
