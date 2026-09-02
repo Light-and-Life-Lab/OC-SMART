@@ -87,17 +87,16 @@ def OCSMART():
         print('List of level-2 products not provided, using default list: rrs, chl')
         l2_prod = ['rrs','chl']
     #######  Floating Point Precision Options  ##########################
-    if 'floating_point_datatype' in input_param.keys():
-        default_floating_point_type = 'float32'
-        datatype = input_param.get('floating_point_datatype', default_floating_point_type)
-        if datatype.lower() not in ['float32', 'float64']:
-            print(f"Warning: Supported floating point datatypes are float32 and float64. The floating_point_datatype value in OCSMART_Input.txt was {datatype}, setting to default type {default_floating_point_type}.")
-            datatype = default_floating_point_type
-        Config.datatype = datatype
+    default_floating_point_type = 'float32'
+    datatype = input_param.get('floating_point_datatype', default_floating_point_type)
+    if datatype.lower() not in ['float32', 'float64']:
+        print(f"Warning: Supported floating point datatypes are float32 and float64. The floating_point_datatype value in OCSMART_Input.txt was {datatype}, setting to default type {default_floating_point_type}.")
+        datatype = default_floating_point_type
+    Config.datatype = datatype
 
-        if datatype in ['float64']:
-            # If the user intentionally chose float64, don't clutter up the console output with unnecessary warnings.
-            warnings.filterwarnings("ignore", module="gas_corrections_lib")
+    if datatype in ['float64']:
+        # If the user intentionally chose float64, don't clutter up the console output with unnecessary warnings.
+        warnings.filterwarnings("ignore", module="gas_corrections_lib")
     #######  L2 file write settings  ##########################
     gzip_compression_opt = int(input_param.get('gzip_compression_opt', 4))
     if gzip_compression_opt < 1 or gzip_compression_opt > 9:
@@ -173,6 +172,7 @@ def OCSMART():
     if compression_algorithm == "gzip":
         print(f"GZIP Compression Option: {gzip_compression_opt}")
     print(f"Compression Shuffle Option: {shuffle_opt}\n")
+    print(f"Floating Point Size: {datatype}")
 
     # read auxilary data (land/water mask)
     aux=AUXData()
