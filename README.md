@@ -110,3 +110,8 @@ A C++-based library for computing gas transmittance values is also used by OC-SM
 
 ## Windows
 Native Windows wheels are not built or supported. Windows users should install and run this library from within **[WSL (Windows Subsystem for Linux)](https://learn.microsoft.com/en-us/windows/wsl/install)**, then follow the Linux installation instructions above from inside your WSL environment.
+
+
+### 7. Consult User Guide
+
+The attached User Guide (UserGuide_Python_Linux.pdf) contains these same install instructions in Section 1. In Section 2, there is additional information on one-time setup of data download credentials. The remaining sections of the guide provide additional information on configuration settings, input/output files, etc.
