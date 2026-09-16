@@ -24,19 +24,29 @@ jobs:
         id: lfs-cache
         with:
           path: .git/lfs
-          key: lfs-${{ hashFiles('.lfs-assets-id') }}
+          key: lfs-v2-${{ hashFiles('.lfs-assets-id') }}
 
       - name: Git LFS Pull
         run: git lfs pull
+
+      - name: Verify LFS files resolved
+        run: |
+          for f in auxdata/common/GOCI_auxdata.h5 auxdata/common/no2_climatology_v2013.hdf auxdata/common/ozone_climatology_v2014.hdf; do
+            size=$(stat -c%s "$f")
+            if [ "$size" -lt 1000000 ]; then
+              echo "ERROR: $f is only $size bytes, the LFS pointer probably did not resolve correctly"
+              exit 1
+            fi
+          done
 
       - name: Package release archives
         run: |
           VERSION="${{ github.ref_name }}"
           OUTDIR="OC-SMART-${VERSION}"
-          mkdir -p "$OUTDIR"
-          rsync -a --exclude='.git' ./ "$OUTDIR/"
-          zip -r "OC-SMART-${VERSION}.zip" "$OUTDIR"
-          tar -czf "OC-SMART-${VERSION}.tar.gz" "$OUTDIR"
+          mkdir -p "/tmp/$OUTDIR"
+          rsync -a --exclude='.git' ./ "/tmp/$OUTDIR/"
+          (cd /tmp && zip -r "$OLDPWD/OC-SMART-${VERSION}.zip" "$OUTDIR")
+          (cd /tmp && tar -czf "$OLDPWD/OC-SMART-${VERSION}.tar.gz" "$OUTDIR")
 
       - name: Upload archives to release
         if: startsWith(github.ref, 'refs/tags/')
