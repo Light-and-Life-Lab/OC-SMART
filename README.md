@@ -10,7 +10,9 @@ The [OC-SMART releases page](https://github.com/Light-and-Life-Lab/OC-SMART/rele
 Select the version you would like to download and then copy the link to the tar.gz file to your clipboard. 
 Navigate to the location where you would like to download OC-SMART on your machine. Then you can download and extract the archive using the command:
 
-`curl -L https://github.com/Light-and-Life-Lab/OC-SMART/archive/refs/tags/v2.6.5.tar.gz | tar -xzf -`
+`curl -L https://github.com/Light-and-Life-Lab/OC-SMART/archive/refs/tags/<version>.tar.gz | tar -xzf -`
+
+where "<version>" is replaced with the OC-SMART version that you would like to download.
 
 ### 2. (Optional) Install the Conda Package Manager
 
