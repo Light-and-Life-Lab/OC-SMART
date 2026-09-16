@@ -226,3 +226,4 @@ L2/
 !L2/.gitkeep
 DataDownloadAuthentication/.netrc
 DataDownloadAuthentication/.urs_cookies
+anc/*.nc
