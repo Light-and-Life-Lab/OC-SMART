@@ -27,7 +27,12 @@ jobs:
           key: lfs-v2-${{ hashFiles('.lfs-assets-id') }}
 
       - name: Git LFS Pull
-        run: GIT_TRACE=1 GIT_TRANSFER_TRACE=1 git lfs pull -v
+        env:
+          GIT_ATTR_SOURCE: HEAD
+          GIT_TRACE: 1
+          GIT_TRANSFER_TRACE: 1
+          GIT_CURL_VERBOSE: 1
+        run: git lfs pull
 
       - name: Verify LFS files resolved
         run: |
