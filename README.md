@@ -12,7 +12,7 @@ Navigate to the location where you would like to download OC-SMART on your machi
 
 `curl -L https://github.com/Light-and-Life-Lab/OC-SMART/archive/refs/tags/<version>.tar.gz | tar -xzf -`
 
-where "<version>" is replaced with the OC-SMART version that you would like to download.
+where "\<version\>" is replaced with the OC-SMART version that you would like to download.
 
 ### 2. (Optional) Install the Conda Package Manager
 
