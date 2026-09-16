@@ -1,0 +1,48 @@
+name: Package release archives
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build_archives:
+    name: Build release archives
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create LFS file list
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+
+      - name: Restore LFS cache
+        uses: actions/cache@v4
+        id: lfs-cache
+        with:
+          path: .git/lfs
+          key: lfs-${{ hashFiles('.lfs-assets-id') }}
+
+      - name: Git LFS Pull
+        run: git lfs pull
+
+      - name: Package release archives
+        run: |
+          VERSION="${{ github.ref_name }}"
+          OUTDIR="OC-SMART-${VERSION}"
+          mkdir -p "$OUTDIR"
+          rsync -a --exclude='.git' ./ "$OUTDIR/"
+          zip -r "OC-SMART-${VERSION}.zip" "$OUTDIR"
+          tar -czf "OC-SMART-${VERSION}.tar.gz" "$OUTDIR"
+
+      - name: Upload archives to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            OC-SMART-*.zip
+            OC-SMART-*.tar.gz
+          generate_release_notes: true
