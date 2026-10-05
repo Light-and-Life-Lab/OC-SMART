@@ -591,8 +591,11 @@ class L1B(object):
         if self.epixl > self.dim[1] or self.epixl < 0:
             self.epixl = self.dim[1]
             print('subimage East boundary out of image, reset to image boundary ...')
-        self.dim[0] = self.eline-self.sline   
+        
+
+        self.dim[0] = self.eline-self.sline  
         self.dim[1] = self.epixl-self.spixl
+
 #        print(self.sline,self.eline,self.spixl,self.epixl)
         nband=len(self.band)
         if self.sensor=="EPIC":
@@ -1617,11 +1620,19 @@ class L1B(object):
                 self.lp_status=1
             else:
                 dist=((self.latitude-north)**2 + (self.longitude-west)**2)**0.5
-                self.sline=np.where(dist==np.min(dist))[0][0]
-                self.spixl=np.where(dist==np.min(dist))[1][0]
+                northwest_line = np.where(dist==np.min(dist))[0][0]
+                northwest_pixel = np.where(dist==np.min(dist))[1][0]
+                
                 dist=((self.latitude-south)**2 + (self.longitude-east)**2)**0.5
-                self.eline=np.where(dist==np.min(dist))[0][0]
-                self.epixl=np.where(dist==np.min(dist))[1][0]
+                southeast_line = np.where(dist==np.min(dist))[0][0]
+                southeast_pixel = np.where(dist==np.min(dist))[1][0]
+
+                self.sline = min(northwest_line, southeast_line)
+                self.eline = max(northwest_line, southeast_line)
+                self.spixl = min(northwest_pixel, southeast_line)
+                self.epixl = max(northwest_pixel, southeast_line)
+
+
                 if self.sline == self.eline or self.spixl == self.epixl:
                     print('Coordinates out of image boundary, unable to extract a subimage...')
                     self.lp_status=1
